@@ -81,12 +81,12 @@ interface User {
 }
 
 
-const baseQuery = fetchBaseQuery({ baseUrl: 'http://localhost:5000/admin/', credentials: "include" });
+const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
 const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result.error && result.error.status === 401) {
-    window.location.href = "/login";
+    window.location.href = "/admin/login";
   }
 
   return result;
