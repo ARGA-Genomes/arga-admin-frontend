@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestErrorText } from "@/components/request-error";
 import { UserTaxon, useGetUserTaxonQuery, useUpdateUserTaxonMutation } from "@/services/admin";
 import { Alert, Box, Button, Group, TextInput, Textarea, Title, Text, LoadingOverlay, Paper } from "@mantine/core";
 import { useForm } from '@mantine/form';
@@ -15,7 +16,7 @@ function Form({ userTaxon }: { userTaxon: UserTaxon }) {
 
   useEffect(() => {
     if (isSuccess) router.push(`user_taxa/${userTaxon.taxa_lists_id}`);
-  }, [data, isSuccess, router]);
+  }, [data, isSuccess, router, userTaxon]);
 
   const form = useForm({
     initialValues: { ...userTaxon } as UserTaxon,
@@ -49,11 +50,10 @@ function Form({ userTaxon }: { userTaxon: UserTaxon }) {
           </Paper>
         </Group>
 
-        {isError && error &&
+        {isError &&
          <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
            <Text>Could not save the new user taxa due to the following reason:</Text>
-           <Text c="dimmed">{error.status}</Text>
-           <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
          </Alert>
         }
 
@@ -76,8 +76,7 @@ export default function EditUserTaxon({ params }: { params: { taxon_id: string }
       {isError && (
         <Alert icon={<IconAlertCircle size="1rem" />} title="Loading failed!" color="red" radius="lg">
           <Text>The request failed to load the user taxa list for the following reason:</Text>
-          <Text c="dimmed">{error.status}</Text>
-          <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
         </Alert>
       )}
 

@@ -1,4 +1,4 @@
-import { BaseQueryFn, FetchBaseQueryError, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { BaseQueryFn, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
 interface Taxon {

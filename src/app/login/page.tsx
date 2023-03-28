@@ -6,6 +6,7 @@ import { Alert, Button, Container, Group, Paper, PasswordInput, TextInput, Text,
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconLogin } from "@tabler/icons-react";
 import { useLoginMutation } from "@/services/admin";
+import { RequestErrorText } from "@/components/request-error";
 
 
 export default function Login() {
@@ -36,11 +37,10 @@ export default function Login() {
             <Button type="submit" leftIcon={<IconLogin />} loading={isLoading || isSuccess}>Login</Button>
           </Group>
 
-        {isError && error &&
+        {isError &&
          <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
            <Text>Login failed due to the following reason:</Text>
-           <Text c="dimmed">{error.status}</Text>
-           <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
          </Alert>
         }
         </form>

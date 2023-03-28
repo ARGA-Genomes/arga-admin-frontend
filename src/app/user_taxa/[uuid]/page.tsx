@@ -1,14 +1,15 @@
 'use client';
 
-import { DataTable } from "mantine-datatable";
+import { DataTable, DataTableColumnTextAlignment } from "mantine-datatable";
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Title, Text, Group, ActionIcon, Notification, Affix, Alert, LoadingOverlay } from "@mantine/core";
-import { IconAlertCircle, IconEdit, IconEye, IconPlaylistAdd, IconTrash, IconX } from "@tabler/icons-react";
+import { IconAlertCircle, IconEdit, IconPlaylistAdd, IconTrash, IconX } from "@tabler/icons-react";
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import Link from "next/link";
 
-import { UserTaxa, UserTaxon, useDeleteUserTaxaMutation, useDeleteUserTaxonMutation, useGetUserTaxaQuery, useUserTaxaItemsQuery } from "@/services/admin";
+import { UserTaxa, UserTaxon, useDeleteUserTaxonMutation, useGetUserTaxaQuery, useUserTaxaItemsQuery } from "@/services/admin";
 import { TableProvider, useTable } from "@/table_provider";
+import { RequestErrorText, getErrorMessage } from "@/components/request-error";
 
 
 const PAGE_SIZES = [10, 20, 50, 100];
@@ -31,10 +32,12 @@ const COLUMNS = [
   {
     accessor: 'actions',
     title: <Text mr="xs">Actions</Text>,
-    textAlignment: 'right',
+    textAlignment: 'right' as DataTableColumnTextAlignment,
     render: (record: UserTaxon) => <Actions record={record} />,
   }
 ];
+
+
 
 
 function Actions({ record }: { record: UserTaxon }) {
@@ -42,7 +45,7 @@ function Actions({ record }: { record: UserTaxon }) {
   const [deleteUserTaxon, { isLoading, error }] = useDeleteUserTaxonMutation();
 
   useEffect(() => { setIsDeleting(isLoading) }, [isLoading, setIsDeleting]);
-  useEffect(() => { setError(error?.data || error?.error || error?.status.toString()) }, [error, setError]);
+  useEffect(() => { setError(getErrorMessage(error)) }, [error, setError]);
 
   return (
     <Group spacing={4} position="right" noWrap>
@@ -68,7 +71,7 @@ function Table({ userTaxa }: { userTaxa: UserTaxa }) {
   const { isDeleting, setError } = useTable();
   const { isFetching, data, error } = useUserTaxaItemsQuery(userTaxa)
 
-  useEffect(() => { setError(error?.data || error?.error || error?.status.toString()) }, [error, setError]);
+  useEffect(() => { setError(getErrorMessage(error)) }, [error, setError]);
 
   return (
     <DataTable
@@ -142,8 +145,7 @@ export default function Page({ params }: { params: { uuid: string } }) {
       {isError && (
         <Alert icon={<IconAlertCircle size="1rem" />} title="Loading failed!" color="red" radius="lg">
           <Text>The request failed to load the user taxa list for the following reason:</Text>
-          <Text c="dimmed">{error.status}</Text>
-          <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
         </Alert>
       )}
 

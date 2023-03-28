@@ -1,6 +1,6 @@
 'use client';
 
-import { DataTable } from "mantine-datatable";
+import { DataTable, DataTableColumnTextAlignment } from "mantine-datatable";
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Title, Text, Group, ActionIcon, Notification, Affix } from "@mantine/core";
 import { IconEdit, IconEye, IconPlaylistAdd, IconTrash, IconX } from "@tabler/icons-react";
@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import { UserTaxa, useDeleteUserTaxaMutation, useUserTaxaListQuery } from "@/services/admin";
 import { TableProvider, useTable } from "@/table_provider";
+import { getErrorMessage } from "@/components/request-error";
 
 
 const PAGE_SIZES = [10, 20, 50, 100];
@@ -18,7 +19,7 @@ const COLUMNS = [
   {
     accessor: 'actions',
     title: <Text mr="xs">Actions</Text>,
-    textAlignment: 'right',
+    textAlignment: 'right' as DataTableColumnTextAlignment,
     render: (record: UserTaxa) => <Actions record={record} />,
   }
 ];
@@ -26,10 +27,10 @@ const COLUMNS = [
 
 function Actions({ record }: { record: UserTaxa }) {
   const { setIsDeleting, setError } = useTable();
-  const [deleteUserTaxa, { isLoading, isSuccess, error }] = useDeleteUserTaxaMutation();
+  const [deleteUserTaxa, { isLoading, error }] = useDeleteUserTaxaMutation();
 
   useEffect(() => { setIsDeleting(isLoading) }, [isLoading, setIsDeleting]);
-  useEffect(() => { setError(error?.data || error?.error || error?.status.toString()) }, [error, setError]);
+  useEffect(() => { setError(getErrorMessage(error)) }, [error, setError]);
 
   return (
     <Group spacing={4} position="right" noWrap>

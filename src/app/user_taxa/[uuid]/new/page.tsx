@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestErrorText } from "@/components/request-error";
 import { UserTaxon, useCreateUserTaxonMutation } from "@/services/admin";
 import { Alert, Box, Button, Group, TextInput, Textarea, Title, Text, Paper } from "@mantine/core";
 import { useForm } from '@mantine/form';
@@ -15,10 +16,11 @@ function Form({ taxaListId }: { taxaListId: string }) {
 
   useEffect(() => {
     if (isSuccess) router.push(`user_taxa/${taxaListId}`);
-  }, [data, isSuccess, router]);
+  }, [data, isSuccess, router, taxaListId]);
 
   const form = useForm({
     initialValues: {
+      id: '',
       taxa_lists_id: taxaListId,
       scientific_name: '',
       scientific_name_authorship: '',
@@ -69,11 +71,10 @@ function Form({ taxaListId }: { taxaListId: string }) {
           </Paper>
         </Group>
 
-        {isError && error &&
+        {isError &&
          <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
            <Text>Could not save the new user taxa due to the following reason:</Text>
-           <Text c="dimmed">{error.status}</Text>
-           <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
          </Alert>
         }
 

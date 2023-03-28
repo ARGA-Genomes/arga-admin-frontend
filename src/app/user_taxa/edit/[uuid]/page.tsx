@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestErrorText } from "@/components/request-error";
 import { UserTaxa, useGetUserTaxaQuery, useUpdateUserTaxaMutation } from "@/services/admin";
 import { Alert, Box, Button, Group, TextInput, Textarea, Title, Text, LoadingOverlay } from "@mantine/core";
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -47,11 +48,10 @@ function Form({ userTaxa }: { userTaxa: UserTaxa }) {
           {...form.getInputProps('description')}
         />
 
-        {isError && error &&
+        {isError &&
          <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
            <Text>Could not save changes to the user taxa due to the following reason:</Text>
-           <Text c="dimmed">{error.status}</Text>
-           <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
          </Alert>
         }
 
@@ -71,13 +71,12 @@ export default function EditTaxaList({ params }: { params: { uuid: string } }) {
     <Box>
       <Title p={20}>Edit Taxa List</Title>
 
-      {isError && (
+      {isError &&
         <Alert icon={<IconAlertCircle size="1rem" />} title="Loading failed!" color="red" radius="lg">
           <Text>The request failed to load the user taxa list for the following reason:</Text>
-          <Text c="dimmed">{error.status}</Text>
-          <Text c="dimmed">{error.data || error.error}</Text>
+          <RequestErrorText error={error} />
         </Alert>
-      )}
+      }
 
       <Box w="auto" p={40} pos="relative" mx="auto">
         <LoadingOverlay

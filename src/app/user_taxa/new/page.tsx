@@ -1,5 +1,6 @@
 'use client';
 
+import { RequestErrorText } from "@/components/request-error";
 import { UserTaxa, useCreateUserTaxaMutation } from "@/services/admin";
 import { Alert, Box, Button, Group, TextInput, Textarea, Title, Text } from "@mantine/core";
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -46,11 +47,10 @@ function Form() {
           {...form.getInputProps('description')}
         />
 
-        {isError && error &&
+        {isError &&
          <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
            <Text>Could not save the new user taxa due to the following reason:</Text>
-           <Text c="dimmed">{error.status}</Text>
-           <Text c="dimmed">{error.data || error.error}</Text>
+           <RequestErrorText error={error} />
          </Alert>
         }
 
