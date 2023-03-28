@@ -15,7 +15,7 @@ function Form() {
   const [newUserTaxa, { isLoading, isSuccess, isError, data, error }] = useCreateUserTaxaMutation();
 
   useEffect(() => {
-    if (isSuccess) router.push(`user_taxa`);
+    if (isSuccess) router.push(`/user_taxa`);
   }, [data, isSuccess, router]);
 
   const form = useForm({

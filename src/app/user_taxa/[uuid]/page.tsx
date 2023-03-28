@@ -49,7 +49,7 @@ function Actions({ record }: { record: UserTaxon }) {
 
   return (
     <Group spacing={4} position="right" noWrap>
-      <Link href={`user_taxa/${record.taxa_lists_id}/edit/${record.id}`}>
+      <Link href={`/user_taxa/${record.taxa_lists_id}/edit/${record.id}`}>
         <ActionIcon color="blue">
           <IconEdit size={16} />
         </ActionIcon>
@@ -110,7 +110,7 @@ function UserTaxa({ userTaxa }: { userTaxa: UserTaxa }) {
           <Title p={20}>{userTaxa.name}</Title>
         </Grid.Col>
         <Grid.Col span="content">
-          <Link href={`user_taxa/${userTaxa.id}/new`}>
+          <Link href={`/user_taxa/${userTaxa.id}/new`}>
             <Button leftIcon={<IconPlaylistAdd />}>New Taxon</Button>
           </Link>
         </Grid.Col>

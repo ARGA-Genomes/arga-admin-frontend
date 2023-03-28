@@ -15,7 +15,7 @@ function Form({ userTaxon }: { userTaxon: UserTaxon }) {
   const [updateUserTaxon, { isLoading, isSuccess, isError, data, error }] = useUpdateUserTaxonMutation();
 
   useEffect(() => {
-    if (isSuccess) router.push(`user_taxa/${userTaxon.taxa_lists_id}`);
+    if (isSuccess) router.push(`/user_taxa/${userTaxon.taxa_lists_id}`);
   }, [data, isSuccess, router, userTaxon]);
 
   const form = useForm({
