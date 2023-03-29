@@ -23,6 +23,8 @@ interface Taxon {
 type TaxaListParams = {
   page: number,
   pageSize: number,
+  source?: string,
+  taxaListsId?: string,
 };
 
 interface TaxaList {
@@ -110,7 +112,16 @@ export const adminApi = createApi({
     }),
 
     taxaList: builder.query<TaxaList, TaxaListParams>({
-      query: (params) => `taxa?page=${params.page}&page_size=${params.pageSize}`,
+      query(params) {
+        let paramStrings = [
+          `page=${params.page}`,
+          `page_size=${params.pageSize}`,
+        ];
+        if (params.source) paramStrings.push(`source=${params.source}`);
+        if (params.taxaListsId) paramStrings.push(`taxa_lists_id=${params.taxaListsId}`);
+
+        return `taxa?${paramStrings.join('&')}`
+      },
     }),
 
     //
