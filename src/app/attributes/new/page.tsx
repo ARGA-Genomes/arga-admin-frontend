@@ -36,7 +36,7 @@ function Form() {
     } as Attribute,
 
     validate: {
-      name: isNotEmpty('Enter a name for the list'),
+      name: isNotEmpty('Enter a name for the attribute'),
       data_type: isNotEmpty('Select a data type'),
     },
   });

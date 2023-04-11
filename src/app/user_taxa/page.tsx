@@ -3,7 +3,7 @@
 import { DataTable, DataTableColumnTextAlignment } from "mantine-datatable";
 import { useEffect, useState } from "react";
 import { Box, Button, Grid, Title, Text, Group, ActionIcon, Notification, Affix } from "@mantine/core";
-import { IconEdit, IconEye, IconPlaylistAdd, IconTrash, IconX } from "@tabler/icons-react";
+import { IconEdit, IconEye, IconPlaylistAdd, IconTableImport, IconTrash, IconX } from "@tabler/icons-react";
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import Link from "next/link";
 
@@ -98,9 +98,15 @@ function UserTaxaList() {
           <Title p={20}>User Defined Taxa</Title>
         </Grid.Col>
         <Grid.Col span="content">
-          <Link href="/user_taxa/new">
-            <Button leftIcon={<IconPlaylistAdd />}>New Taxa List</Button>
-          </Link>
+          <Group position="right" spacing="xl">
+            <Link href="/user_taxa/import">
+              <Button variant="outline" leftIcon={<IconTableImport />}>Import Taxa List</Button>
+            </Link>
+
+            <Link href="/user_taxa/new">
+              <Button leftIcon={<IconPlaylistAdd />}>New Taxa List</Button>
+            </Link>
+          </Group>
         </Grid.Col>
       </Grid>
 

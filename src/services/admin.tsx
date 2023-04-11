@@ -97,6 +97,13 @@ interface AttributeList {
 };
 
 
+export interface TaxaImport {
+  file: string,
+  name: string,
+  description?: string,
+}
+
+
 const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
 const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
@@ -303,6 +310,20 @@ export const adminApi = createApi({
       },
       invalidatesTags: (_result, _error, { id }) => [{ type: 'Attribute', id }],
     }),
+
+
+    //
+    // Imports
+    //
+    createTaxaImport: builder.mutation<null, Partial<TaxaImport>>({
+      query(data) {
+        return {
+          url: 'queue',
+          method: 'POST',
+          body: data,
+        }
+      },
+    }),
   }),
 });
 
@@ -328,4 +349,6 @@ export const {
   useCreateAttributeMutation,
   useUpdateAttributeMutation,
   useDeleteAttributeMutation,
+
+  useCreateTaxaImportMutation,
 } = adminApi;
