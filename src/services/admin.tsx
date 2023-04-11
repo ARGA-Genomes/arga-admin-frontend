@@ -83,6 +83,20 @@ interface User {
 }
 
 
+export interface Attribute {
+  id: string,
+  name: string,
+  data_type: string,
+  description?: string,
+  reference_url?: string,
+}
+
+interface AttributeList {
+  total: number,
+  records: Attribute[],
+};
+
+
 const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
 const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
@@ -97,7 +111,7 @@ const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const adminApi = createApi({
   reducerPath: 'admin',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['UserTaxa', 'UserTaxon'],
+  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute'],
   endpoints: (builder) => ({
 
     // Auth
@@ -233,6 +247,62 @@ export const adminApi = createApi({
       },
       invalidatesTags: (_result, _error, { id }) => [{ type: 'UserTaxon', id }],
     }),
+
+
+    //
+    // Attributes
+    //
+    attributeList: builder.query<AttributeList, void>({
+      query: (_) => 'attributes',
+      providesTags: (result) => {
+        if (result) {
+          return [
+            ...result.records.map(({ id }) => ({ type: 'Attribute', id } as const)),
+            { type: 'Attribute', id: 'LIST' },
+          ]
+        } else {
+          return [{ type: 'Attribute', id: 'LIST' }]
+        }
+      },
+    }),
+
+    createAttribute: builder.mutation<Attribute, Partial<Attribute>>({
+      query(data) {
+        return {
+          url: 'attributes',
+          method: 'POST',
+          body: data,
+        }
+      },
+      invalidatesTags: [{ type: 'Attribute', id: 'LIST' }],
+    }),
+
+    getAttribute: builder.query<Attribute, string>({
+      query: (id) => `attributes/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Attribute', id }],
+    }),
+
+    updateAttribute: builder.mutation<Attribute, Partial<Attribute>>({
+      query(data) {
+        const { id, ...body } = data
+        return {
+          url: `attributes/${id}`,
+          method: 'PUT',
+          body,
+        }
+      },
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Attribute', id }],
+    }),
+
+    deleteAttribute: builder.mutation<Attribute, Attribute>({
+      query(data) {
+        return {
+          url: `attributes/${data.id}`,
+          method: 'DELETE',
+        }
+      },
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Attribute', id }],
+    }),
   }),
 });
 
@@ -252,4 +322,10 @@ export const {
   useCreateUserTaxonMutation,
   useUpdateUserTaxonMutation,
   useDeleteUserTaxonMutation,
+
+  useAttributeListQuery,
+  useGetAttributeQuery,
+  useCreateAttributeMutation,
+  useUpdateAttributeMutation,
+  useDeleteAttributeMutation,
 } = adminApi;
