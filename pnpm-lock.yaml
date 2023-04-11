@@ -18,10 +18,12 @@ specifiers:
   '@types/react-dom': 18.0.11
   eslint: 8.36.0
   eslint-config-next: 13.2.4
+  filepond: ^4.30.4
   mantine-datatable: ^2.2.5
   next: 13.2.4
   react: 18.2.0
   react-dom: 18.2.0
+  react-filepond: ^7.1.2
   react-redux: ^8.0.5
   typescript: 5.0.2
 
@@ -43,10 +45,12 @@ dependencies:
   '@types/react-dom': 18.0.11
   eslint: 8.36.0
   eslint-config-next: 13.2.4_j4766f7ecgqbon3u7zlxn5zszu
+  filepond: 4.30.4
   mantine-datatable: 2.2.5_3u4jbol3kcmynokdvqkd67fbyu
   next: 13.2.4_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  react-filepond: 7.1.2_mnl76jm3ryge2poziybvdyye2a
   react-redux: 8.0.5_3xleytyzprlgycb2ded54tx72i
   typescript: 5.0.2
 
@@ -1687,6 +1691,10 @@ packages:
       flat-cache: 3.0.4
     dev: false
 
+  /filepond/4.30.4:
+    resolution: {integrity: sha512-FCwsMvG9iiEs6uobdDrTaKsCgsqys0NuLgPPD8n37AYVYBiiDkrPkk9MSIU5rT2FahYcL1bScYI9huIPtlzqyA==}
+    dev: false
+
   /fill-range/7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
     engines: {node: '>=8'}
@@ -2591,6 +2599,18 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
+    dev: false
+
+  /react-filepond/7.1.2_mnl76jm3ryge2poziybvdyye2a:
+    resolution: {integrity: sha512-vrlx9o/n+jGikh6jLey+PpUGYtEZn8MdeB6JFeX/5/N/Mu75IHG+MFQbv8R27bNXvS41mDtV9Fo5DG+s6siVIA==}
+    peerDependencies:
+      filepond: '>=3.7.x < 5.x'
+      react: 16 - 18
+      react-dom: 16 - 18
+    dependencies:
+      filepond: 4.30.4
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
     dev: false
 
   /react-is/16.13.1:
