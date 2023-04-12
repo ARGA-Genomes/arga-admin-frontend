@@ -43,6 +43,11 @@ interface UserTaxaList {
   records: UserTaxa[],
 };
 
+type UserTaxaListParams = {
+  page: number,
+  pageSize: number,
+};
+
 
 export interface UserTaxon {
   id: string,
@@ -70,6 +75,12 @@ interface UserTaxaItems {
   records: UserTaxon[],
 }
 
+type UserTaxaItemsParams = {
+  userTaxa: UserTaxa,
+  page: number,
+  pageSize: number,
+};
+
 
 interface LoginParams {
   email: string,
@@ -94,6 +105,11 @@ export interface Attribute {
 interface AttributeList {
   total: number,
   records: Attribute[],
+};
+
+type AttributeListParams = {
+  page: number,
+  pageSize: number,
 };
 
 
@@ -148,8 +164,14 @@ export const adminApi = createApi({
     //
     // User Taxa Lists
     //
-    userTaxaList: builder.query<UserTaxaList, void>({
-      query: (_) => 'user_taxa',
+    userTaxaList: builder.query<UserTaxaList, UserTaxaListParams>({
+      query(params) {
+        let paramStrings = [
+          `page=${params.page}`,
+          `page_size=${params.pageSize}`,
+        ];
+        return `user_taxa?${paramStrings.join('&')}`
+      },
       providesTags: (result) => {
         if (result) {
           return [
@@ -203,8 +225,14 @@ export const adminApi = createApi({
     //
     // User Taxa Items
     //
-    userTaxaItems: builder.query<UserTaxaItems, UserTaxa>({
-      query: (user_taxa) => `user_taxa/${user_taxa.id}/items`,
+    userTaxaItems: builder.query<UserTaxaItems, UserTaxaItemsParams>({
+      query(params) {
+        let paramStrings = [
+          `page=${params.page}`,
+          `page_size=${params.pageSize}`,
+        ];
+        return `user_taxa/${params.userTaxa.id}/items?${paramStrings.join('&')}`
+      },
       providesTags: (result) => {
         if (result) {
           return [
@@ -259,8 +287,14 @@ export const adminApi = createApi({
     //
     // Attributes
     //
-    attributeList: builder.query<AttributeList, void>({
-      query: (_) => 'attributes',
+    attributeList: builder.query<AttributeList, AttributeListParams>({
+      query(params) {
+        let paramStrings = [
+          `page=${params.page}`,
+          `page_size=${params.pageSize}`,
+        ];
+        return `attributes?${paramStrings.join('&')}`
+      },
       providesTags: (result) => {
         if (result) {
           return [

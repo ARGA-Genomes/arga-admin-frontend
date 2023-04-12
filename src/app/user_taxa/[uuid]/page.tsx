@@ -69,7 +69,7 @@ function Table({ userTaxa }: { userTaxa: UserTaxa }) {
 
   const [bodyRef] = useAutoAnimate();
   const { isDeleting, setError } = useTable();
-  const { isFetching, data, error } = useUserTaxaItemsQuery(userTaxa)
+  const { isFetching, data, error } = useUserTaxaItemsQuery({ userTaxa, page, pageSize })
 
   useEffect(() => { setError(getErrorMessage(error)) }, [error, setError]);
 

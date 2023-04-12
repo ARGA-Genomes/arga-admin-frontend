@@ -56,7 +56,7 @@ function Table() {
 
   const [bodyRef] = useAutoAnimate();
   const { isDeleting } = useTable();
-  const { isFetching, data } = useAttributeListQuery()
+  const { isFetching, data } = useAttributeListQuery({ page, pageSize })
 
   return (
     <DataTable
