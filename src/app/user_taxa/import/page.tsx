@@ -12,7 +12,17 @@ import { FormErrors, isNotEmpty, useForm } from "@mantine/form";
 import { RequestErrorText } from "@/components/request-error";
 
 
-const FILE_UPLOAD_URL = process.env.NEXT_PUBLIC_ARGA_API_URL;
+const SERVER_CONFIG = {
+  url: process.env.NEXT_PUBLIC_ARGA_API_URL,
+  process: {
+    url: '/upload',
+    withCredentials: true,
+  },
+  revert: null,
+  restore: null,
+  load: null,
+  fetch: null,
+};
 
 
 function FileUpload() {
@@ -28,7 +38,7 @@ function FileUpload() {
     initialValues: {
       file: '',
       name: '',
-      description: '',
+      description: undefined,
     } as TaxaImport,
 
     validate: {
@@ -60,7 +70,7 @@ function FileUpload() {
         <FilePond
           required={true}
           allowMultiple={false}
-          server={`${FILE_UPLOAD_URL}/upload`}
+          server={SERVER_CONFIG}
           name="fileUuid"
           onupdatefiles={files => { setFiles(files); setProcessed(false) }}
           onprocessfiles={() => setProcessed(true)}
