@@ -43,11 +43,6 @@ interface UserTaxaList {
   records: UserTaxa[],
 };
 
-type UserTaxaListParams = {
-  page: number,
-  pageSize: number,
-};
-
 
 export interface UserTaxon {
   id: string,
@@ -164,14 +159,8 @@ export const adminApi = createApi({
     //
     // User Taxa Lists
     //
-    userTaxaList: builder.query<UserTaxaList, UserTaxaListParams>({
-      query(params) {
-        let paramStrings = [
-          `page=${params.page}`,
-          `page_size=${params.pageSize}`,
-        ];
-        return `user_taxa?${paramStrings.join('&')}`
-      },
+    userTaxaList: builder.query<UserTaxaList, void>({
+      query: () => 'user_taxa',
       providesTags: (result) => {
         if (result) {
           return [

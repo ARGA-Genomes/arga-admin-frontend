@@ -59,7 +59,7 @@ function Table() {
 
   const [bodyRef] = useAutoAnimate();
   const { isDeleting } = useTable();
-  const { isFetching, data } = useUserTaxaListQuery({ page, pageSize })
+  const { isFetching, data } = useUserTaxaListQuery()
 
   return (
     <DataTable
