@@ -16,7 +16,7 @@ import {
   ColorScheme
 } from '@mantine/core';
 import { useColorScheme } from '@mantine/hooks';
-import { IconBinaryTree2, IconList, IconMoonStars, IconSun, IconTags } from '@tabler/icons-react';
+import { IconBinaryTree2, IconList, IconMoonStars, IconPhoto, IconSun, IconTags } from '@tabler/icons-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -72,6 +72,9 @@ function SideNav() {
         </Link>
         <Link href="/attributes">
           <NavLink color="green" label="Attributes" icon={<IconTags/>} />
+        </Link>
+        <Link href="/media">
+          <NavLink color="orange" label="Media" icon={<IconPhoto/>} />
         </Link>
       </Navbar.Section>
 

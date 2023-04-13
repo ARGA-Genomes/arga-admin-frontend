@@ -125,6 +125,22 @@ export interface TaxaImport {
 }
 
 
+export interface Media {
+  id: string,
+  media_id?: number,
+  media_type?: string,
+  format?: string,
+  identifier?: string,
+  references?: string,
+  created?: string,
+  creator?: string,
+  publisher?: string,
+  license?: string,
+  rights_holder?: string,
+  catalog_number?: string,
+}
+
+
 const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
 const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
@@ -139,7 +155,7 @@ const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const adminApi = createApi({
   reducerPath: 'admin',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute'],
+  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute', 'Media'],
   endpoints: (builder) => ({
 
     // Auth
@@ -362,6 +378,29 @@ export const adminApi = createApi({
         }
       },
     }),
+
+
+    //
+    // Media
+    //
+    mediaList: builder.query<Media[], string>({
+      query(scientificName) {
+        let paramStrings = [
+          `scientific_name=${scientificName}`,
+        ];
+        return `media?${paramStrings.join('&')}`
+      },
+      providesTags: (records) => {
+        if (records) {
+          return [
+            ...records.map(({ id }) => ({ type: 'Media', id } as const)),
+            { type: 'Media', id: 'LIST' },
+          ]
+        } else {
+          return [{ type: 'Media', id: 'LIST' }]
+        }
+      },
+    }),
   }),
 });
 
@@ -390,4 +429,6 @@ export const {
   useDeleteAttributeMutation,
 
   useCreateTaxaImportMutation,
+
+  useMediaListQuery,
 } = adminApi;
