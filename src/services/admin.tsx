@@ -1,8 +1,9 @@
 import { BaseQueryFn, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
-interface Taxon {
-  scientificName?: string,
+export interface Taxon {
+  id: string,
+  scientific_name?: string,
   scientific_name_authorship?: string,
   canonical_name?: string,
   generic_name?: string,
@@ -23,6 +24,7 @@ interface Taxon {
 type TaxaListParams = {
   page: number,
   pageSize: number,
+  search?: string,
   source?: string,
   taxaListsId?: string,
 };
@@ -31,6 +33,14 @@ interface TaxaList {
   total: number,
   records: Taxon[],
 };
+
+export interface TaxonAttribute {
+  id: string,
+  data_type: string,
+  name: string,
+  value: string | string[],
+}
+
 
 export interface UserTaxa {
   id: string,
@@ -149,11 +159,16 @@ export const adminApi = createApi({
           `page=${params.page}`,
           `page_size=${params.pageSize}`,
         ];
+        if (params.search) paramStrings.push(`q=${params.search}`);
         if (params.source) paramStrings.push(`source=${params.source}`);
         if (params.taxaListsId) paramStrings.push(`taxa_lists_id=${params.taxaListsId}`);
 
         return `taxa?${paramStrings.join('&')}`
       },
+    }),
+
+    taxonAttributes: builder.query<TaxonAttribute[], string>({
+      query: (uuid) => `taxa/${uuid}`,
     }),
 
     //
@@ -354,6 +369,7 @@ export const {
   useLoginMutation,
 
   useTaxaListQuery,
+  useTaxonAttributesQuery,
 
   useUserTaxaListQuery,
   useGetUserTaxaQuery,
