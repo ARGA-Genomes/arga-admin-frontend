@@ -60,7 +60,7 @@ function TaxonDetails({ taxon }: { taxon: Taxon }) {
       { taxon.genus ? <AttributeRow name="Genus" value={taxon.genus} /> : null }
       {
         !data || isFetching ? "Loading attributes" : data.map(attr => (
-          <AttributeRow name={attr.name} value={attrValueToString(attr)} />
+          <AttributeRow key={attr.id} name={attr.name} value={attrValueToString(attr)} />
         ))
       }
     </Paper>
@@ -171,7 +171,7 @@ function Filter(props: FilterProps) {
 
   const [value, setValue] = useState('');
   const [debounced] = useDebouncedValue(value, 500);
-  useEffect(() => props.onSearchChanged(debounced), [debounced]);
+  useEffect(() => props.onSearchChanged(debounced), [debounced, props]);
 
   return (
     <Paper p={20} my={20}>
