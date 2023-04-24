@@ -1,8 +1,9 @@
 'use client';
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
-import { Media, Taxon, useMediaListQuery, useTaxaListQuery } from "@/services/admin";
-import { Box, Container, Grid, Image, Title, Text, Skeleton, Card, SimpleGrid, Divider, Group } from "@mantine/core";
+import { Media, Taxon, useMainMediaQuery, useMediaListQuery, useSetMainMediaMutation, useTaxaListQuery, useTaxonAttributesQuery } from "@/services/admin";
+import { Box, Container, Grid, Image, Title, Text, Skeleton, Card, SimpleGrid, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay } from "@mantine/core";
+import { IconCheck, IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -86,41 +87,78 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
 }
 
 function MediaSelector({ taxon, media }: { taxon: Taxon, media: Media[] }) {
-  if (media.length == 0) {
-    return <Text>No media images found</Text>
-  }
-
-  const [selected, setSelected] = useState(media[0])
+  const [curated, setCurated] = useState("")
+  const [selected, setSelected] = useState<Media | undefined>(undefined)
 
   const large = (identifier: string) => {
     return identifier.replace("original", "medium");
   }
 
+  const { data, isLoading } = useMainMediaQuery(taxon.canonical_name || '')
+  useEffect(() => {
+    setCurated(data?.id || '')
+    setSelected(data)
+  }, [data])
+
+
+  const [mut, mutResult] = useSetMainMediaMutation()
+
+  const setMainMedia = () => {
+    if (selected && taxon.canonical_name) {
+      mut({ media_uuid: selected.id, species: taxon.canonical_name });
+    }
+  }
+
   return (
     <Card withBorder shadow="sm" radius="md">
-      <Title order={4}>{taxon.canonical_name}</Title>
-      <Group>
-        <Text mt="sm" color="dimmed" size="sm">
-          &copy; {selected.rights_holder} {selected.license}
-        </Text>
-        <Divider size="xs" orientation="vertical" />
-        <Text mt="sm" color="dimmed" size="sm">
-          <Link href={selected.references || "#"} target="_blank">{selected.publisher}</Link>
-        </Text>
+    <LoadingOverlay visible={isLoading}/>
+      <Group position="apart">
+        <Stack spacing="xs" align="flex-start" justify="flex-start">
+          <Title order={4}>{taxon.canonical_name}</Title>
+          { media.length > 0 && selected ?
+          <Group>
+            <Text color="dimmed" size="sm">&copy; {selected.rights_holder} {selected.license}</Text>
+            <Divider size="xs" orientation="vertical" />
+            <Text color="dimmed" size="sm">
+              <Link href={selected.references || "#"} target="_blank">{selected.publisher}</Link>
+            </Text>
+          </Group>
+          : null }
+        </Stack>
+        { media.length > 0 && selected ?
+        <Button onClick={setMainMedia} loading={mutResult.isLoading}>Set as main</Button>
+        : null }
       </Group>
 
       <Card.Section mt="sm">
+        { media.length > 0 && selected ?
         <Image
           src={large(selected.identifier || '')}
           radius="sm"
           height={500}
           fit="contain"
         />
+        :
+        <Text align="center">No media images found</Text>
+        }
       </Card.Section>
 
       <Card.Section inheritPadding mt="sm" pb="md">
         <SimpleGrid cols={10}>
-          {media.map((image) => <ImageLink media={image} onSelected={setSelected} key={image.id}  />)}
+          {media.map((image) => {
+            return (
+              <Indicator
+                color="green"
+                position="top-center"
+                size={30}
+                label={<IconPinned/>}
+                disabled={image.id != curated}
+                key={image.id}
+              >
+                <ImageLink media={image} onSelected={setSelected}  />
+              </Indicator>
+            )}
+          )}
         </SimpleGrid>
       </Card.Section>
     </Card>

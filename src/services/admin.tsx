@@ -140,6 +140,11 @@ export interface Media {
   catalog_number?: string,
 }
 
+export interface SetMainMedia {
+  media_uuid: string,
+  species: string,
+}
+
 
 const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
@@ -401,6 +406,28 @@ export const adminApi = createApi({
         }
       },
     }),
+
+    mainMedia: builder.query<Media, string>({
+      query(scientificName) {
+        let paramStrings = [
+          `scientific_name=${scientificName}`,
+        ];
+        return `media/main?${paramStrings.join('&')}`
+      },
+      providesTags: () => [{ type: 'Media', id: 'MAIN' }],
+    }),
+
+    setMainMedia: builder.mutation<null, SetMainMedia>({
+      query({ media_uuid, ...body}) {
+        return {
+          url: `media/${media_uuid}/main`,
+          method: 'POST',
+          body,
+        }
+      },
+      invalidatesTags: () => [{ type: 'Media', id: 'MAIN' }],
+    }),
+
   }),
 });
 
@@ -431,4 +458,6 @@ export const {
   useCreateTaxaImportMutation,
 
   useMediaListQuery,
+  useMainMediaQuery,
+  useSetMainMediaMutation,
 } = adminApi;
