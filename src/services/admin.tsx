@@ -140,6 +140,17 @@ export interface Media {
   catalog_number?: string,
 }
 
+export interface MediaList {
+  total: number,
+  records: Media[],
+}
+
+type MediaListParams = {
+  scientificName: string,
+  page: number,
+  pageSize: number,
+};
+
 export interface SetMainMedia {
   media_uuid: string,
   species: string,
@@ -388,17 +399,19 @@ export const adminApi = createApi({
     //
     // Media
     //
-    mediaList: builder.query<Media[], string>({
-      query(scientificName) {
+    mediaList: builder.query<MediaList, MediaListParams>({
+      query(params) {
         let paramStrings = [
-          `scientific_name=${scientificName}`,
+          `scientific_name=${params.scientificName}`,
+          `page=${params.page}`,
+          `page_size=${params.pageSize}`,
         ];
         return `media?${paramStrings.join('&')}`
       },
-      providesTags: (records) => {
-        if (records) {
+      providesTags: (list) => {
+        if (list) {
           return [
-            ...records.map(({ id }) => ({ type: 'Media', id } as const)),
+            ...list.records.map(({ id }) => ({ type: 'Media', id } as const)),
             { type: 'Media', id: 'LIST' },
           ]
         } else {
