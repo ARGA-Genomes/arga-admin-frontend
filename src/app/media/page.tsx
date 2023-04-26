@@ -62,7 +62,10 @@ function Layout() {
           />
         </Grid.Col>
         <Grid.Col span="auto">
-          { taxon ? <MediaEditor taxon={taxon} /> : null }
+          { taxon?.canonical_name
+            ? <MediaEditor taxon={taxon} />
+            : <Text>The taxon must have a canonical name before it can search for media files</Text>
+          }
         </Grid.Col>
     </Grid>
 
@@ -71,11 +74,7 @@ function Layout() {
 }
 
 function MediaEditor({ taxon }: { taxon: Taxon }) {
-  if (!taxon.canonical_name) {
-    return <Text>The taxon must have a canonical name before it can search for media files</Text>
-  }
-
-  const { isFetching, data } = useMediaListQuery(taxon.canonical_name);
+  const { isFetching, data } = useMediaListQuery(taxon.canonical_name || '');
 
   return (
     <Container>
@@ -137,6 +136,7 @@ function MediaSelector({ taxon, media }: { taxon: Taxon, media: Media[] }) {
           radius="sm"
           height={500}
           fit="contain"
+          alt="Selected image"
         />
         :
         <Text align="center">No media images found</Text>
@@ -179,7 +179,7 @@ function ImageLink(props: ImageLinkProps) {
 
   return (
     <Link href="#" onClick={(ev) => { ev.preventDefault(); props.onSelected(props.media) }}>
-      <Image src={thumb(props.media.identifier)} radius="sm" />
+      <Image src={thumb(props.media.identifier)} radius="sm" alt="Thumbnail image" />
     </Link>
   )
 }
