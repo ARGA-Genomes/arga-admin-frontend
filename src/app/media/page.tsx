@@ -211,7 +211,7 @@ function MediaGallery(props: MediaGalleryProps) {
       setHasMore(loaded < data.total)
       setCanLoadMore(true)
     });
-  }, [data, loaded])
+  }, [data])
 
   function loadMedia(page: number) {
     if (!isFetching && hasMore && setCanLoadMore) {
