@@ -1,8 +1,8 @@
 'use client';
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
-import { Media, Taxon, useMainMediaQuery, useMediaListQuery, useSetMainMediaMutation, useTaxaListQuery, useTaxonAttributesQuery } from "@/services/admin";
-import { Box, Container, Grid, Image, Title, Text, Skeleton, Card, SimpleGrid, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay } from "@mantine/core";
+import { Media, Taxon, useMainMediaQuery, useMediaListQuery, useSetMainMediaMutation, useTaxaListQuery } from "@/services/admin";
+import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay } from "@mantine/core";
 import { IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { getImageSize } from 'react-image-size';
@@ -55,7 +55,7 @@ function Layout() {
         handlers.append(record);
       }
     }
-  }, [data])
+  }, [data, isFetching, isSuccess])
 
   const loadMoreRecords = () => {
     if (!isFetching && data?.total && data.total > records.length) {
@@ -212,7 +212,7 @@ function MediaGallery(props: MediaGalleryProps) {
       setHasMore(loaded < data.total)
       setCanLoadMore(true)
     });
-  }, [data])
+  }, [data, loaded])
 
   function loadMedia(page: number) {
     if (!isFetching && hasMore && setCanLoadMore) {
