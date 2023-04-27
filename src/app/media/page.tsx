@@ -84,7 +84,6 @@ function Layout() {
             loaderVariant="bars"
             loaderSize="xl"
             loaderColor="green"
-            totalRecords={data && data.total}
             onRowClick={setTaxon}
             onScrollToBottom={loadMoreRecords}
           />
