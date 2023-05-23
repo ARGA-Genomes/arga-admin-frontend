@@ -1,7 +1,7 @@
 'use client';
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
-import { Media, Taxon, useMainMediaQuery, useMediaListQuery, useSetMainMediaMutation, useTaxaListQuery } from "@/services/admin";
+import { Taxon, useMainMediaQuery, useSetMainMediaMutation, useTaxaListQuery } from "@/services/admin";
 import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay } from "@mantine/core";
 import { IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
@@ -11,6 +11,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useListState } from "@mantine/hooks";
+import { Media, usePhotoListQuery } from "@/services/inaturalist";
 
 
 const COLUMNS = [
@@ -24,8 +25,6 @@ interface Photo {
   key: string,
   media: Media,
 }
-
-
 
 
 function Layout() {
@@ -97,6 +96,11 @@ function Layout() {
   )
 }
 
+function extractRightsHolder(attribution?: string) {
+  if (!attribution) return "";
+  return attribution.substring(0, attribution.indexOf(", some rights reserved")).replaceAll("(c)", "");
+}
+
 function MediaEditor({ taxon }: { taxon: Taxon }) {
   const [curated, setCurated] = useState<Media | undefined>(undefined)
   const [selected, setSelected] = useState<Media | undefined>(undefined)
@@ -105,7 +109,7 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
     return identifier.replace("original", "medium");
   }
 
-  const { data, isLoading } = useMainMediaQuery(taxon.canonical_name || '')
+  const { data, isLoading } = useMainMediaQuery(taxon.scientific_name || '')
   useEffect(() => {
     setCurated(data)
     setSelected(data)
@@ -116,7 +120,14 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
 
   const setMainMedia = () => {
     if (selected && taxon.canonical_name) {
-      mut({ media_uuid: selected.id, species: taxon.canonical_name });
+      mut({
+        url: selected.url.replaceAll("small", "original"),
+        scientific_name: taxon.scientific_name || '',
+        publisher: "iNaturalist",
+        rights_holder: extractRightsHolder(selected.attribution),
+        license: selected.license_code,
+        source: selected.source,
+      });
     }
   }
 
@@ -129,10 +140,10 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
           <Title order={4}>{taxon.canonical_name}</Title>
           { selected ?
           <Group>
-            <Text color="dimmed" size="sm">&copy; {selected.rights_holder} {selected.license}</Text>
+            <Text color="dimmed" size="sm">&copy; {extractRightsHolder(selected.attribution)} ({selected.license_code})</Text>
             <Divider size="xs" orientation="vertical" />
             <Text color="dimmed" size="sm">
-              <Link href={selected.references || "#"} target="_blank">{selected.publisher}</Link>
+              <Link href={selected.url || "#"} target="_blank">iNaturalist</Link>
             </Text>
           </Group>
           : null }
@@ -145,7 +156,7 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
       <Card.Section mt="sm">
         { selected ?
         <Image
-          src={large(selected.identifier || '')}
+          src={large(selected.url.replaceAll("small", "medium") || '')}
           radius="sm"
           height={500}
           fit="contain"
@@ -179,10 +190,11 @@ function MediaGallery(props: MediaGalleryProps) {
   const { taxon, onSelected } = props;
 
   const [page, setPage] = useState(1)
-  const { isFetching, data } = useMediaListQuery({
+
+  const { isFetching, data } = usePhotoListQuery({
     scientificName: taxon.canonical_name || '',
     page: page,
-    pageSize: 5,
+    pageSize: 10,
   });
 
   const [gallery, handlers] = useListState<Photo[]>([]);
@@ -193,22 +205,30 @@ function MediaGallery(props: MediaGalleryProps) {
   useEffect(() => {
     if (!data) return;
 
-    let promises = data.records.map(async media => {
-      const url = media.identifier?.replace("original", "small") || '';
-      const dimensions = await getImageSize(url)
+    let promises = data.results.map(async observation => {
+      let media = observation.photos[0];
+      media = {
+        id: media.id,
+        license_code: media.license_code,
+        url: media.url.replace("square", "small") || '',
+        attribution: media.attribution,
+        source: observation.uri,
+      }
+
+      const dimensions = await getImageSize(media.url)
       return {
-        src: url,
-        key: url,
+        src: media.url,
+        key: media.url,
         width: dimensions.width,
         height: dimensions.height,
-        media: media,
+        media,
       };
     });
 
     Promise.all(promises).then((photos) => {
       handlers.append(photos)
       setLoaded(loaded + photos.length)
-      setHasMore(loaded < data.total)
+      setHasMore(loaded < data.total_results)
       setCanLoadMore(true)
     });
   }, [data])

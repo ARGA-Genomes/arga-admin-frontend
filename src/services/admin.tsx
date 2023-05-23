@@ -152,8 +152,12 @@ type MediaListParams = {
 };
 
 export interface SetMainMedia {
-  media_uuid: string,
-  species: string,
+  url: string,
+  scientific_name: string,
+  publisher: string,
+  rights_holder: string,
+  license: string,
+  source: string,
 }
 
 
@@ -431,9 +435,9 @@ export const adminApi = createApi({
     }),
 
     setMainMedia: builder.mutation<null, SetMainMedia>({
-      query({ media_uuid, ...body}) {
+      query(body) {
         return {
-          url: `media/${media_uuid}/main`,
+          url: `media/main`,
           method: 'POST',
           body,
         }
