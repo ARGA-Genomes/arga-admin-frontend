@@ -127,17 +127,11 @@ export interface TaxaImport {
 
 export interface Media {
   id: string,
-  media_id?: number,
-  media_type?: string,
-  format?: string,
-  identifier?: string,
-  references?: string,
-  created?: string,
-  creator?: string,
+  url: string,
+  source?: string,
   publisher?: string,
   license?: string,
   rights_holder?: string,
-  catalog_number?: string,
 }
 
 export interface MediaList {

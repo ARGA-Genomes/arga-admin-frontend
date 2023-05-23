@@ -98,7 +98,12 @@ function Layout() {
 
 function extractRightsHolder(attribution?: string) {
   if (!attribution) return "";
-  return attribution.substring(0, attribution.indexOf(", some rights reserved")).replaceAll("(c)", "");
+
+  attribution = attribution.replaceAll("(c)", "")
+  const idx = attribution.indexOf(", some rights reserved");
+  if (idx > 0) attribution = attribution.substring(0, idx);
+
+  return attribution;
 }
 
 function MediaEditor({ taxon }: { taxon: Taxon }) {
@@ -111,8 +116,20 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
 
   const { data, isLoading } = useMainMediaQuery(taxon.scientific_name || '')
   useEffect(() => {
-    setCurated(data)
-    setSelected(data)
+    if (data) {
+      const media = {
+        id: 0,
+        url: data.url,
+        license_code: data.license || "",
+        attribution: data.rights_holder || "",
+        source: data.source || "",
+      };
+      setCurated(media)
+      setSelected(media)
+    } else {
+      setCurated(undefined)
+      setSelected(undefined)
+    }
   }, [data])
 
 
