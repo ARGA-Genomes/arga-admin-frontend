@@ -40,11 +40,9 @@ export const iNaturalistApi = createApi({
     photoList: builder.query<MediaList, MediaListParams>({
       query(params) {
         let paramStrings = [
-          'photos=true',
           'photo_licensed=true',
-          'lrank=species',
+          'verifiable=true',
           'quality_grade=research',
-          'order=desc',
           'order_by=votes',
           `taxon_name=${params.scientificName}`,
           `page=${params.page}`,

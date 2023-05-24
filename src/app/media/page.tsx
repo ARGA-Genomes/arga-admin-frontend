@@ -222,16 +222,17 @@ function MediaGallery(props: MediaGalleryProps) {
   useEffect(() => {
     if (!data) return;
 
-    let promises = data.results.map(async observation => {
-      let media = observation.photos[0];
-      media = {
+    let all = data.results.map(observation => {
+      return observation.photos.map(media => {return {
         id: media.id,
         license_code: media.license_code,
         url: media.url.replace("square", "small") || '',
         attribution: media.attribution,
         source: observation.uri,
-      }
+      }})
+    }).flat();
 
+    let promises = all.map(async media => {
       const dimensions = await getImageSize(media.url)
       return {
         src: media.url,
