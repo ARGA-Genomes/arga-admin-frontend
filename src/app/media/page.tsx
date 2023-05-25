@@ -2,7 +2,7 @@
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
 import { Taxon, useMainMediaQuery, useSetMainMediaMutation, useTaxaListQuery } from "@/services/admin";
-import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay } from "@mantine/core";
+import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center } from "@mantine/core";
 import { IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { getImageSize } from 'react-image-size';
@@ -179,8 +179,7 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
           fit="contain"
           alt="Selected image"
         />
-        :
-        <Text align="center">No media images found</Text>
+        : null
         }
       </Card.Section>
 
@@ -217,6 +216,7 @@ function MediaGallery(props: MediaGalleryProps) {
   const [gallery, handlers] = useListState<Photo[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [canLoadMore, setCanLoadMore] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
   const [loaded, setLoaded] = useState(0);
 
   useEffect(() => {
@@ -248,12 +248,14 @@ function MediaGallery(props: MediaGalleryProps) {
       setLoaded(loaded + photos.length)
       setHasMore(loaded < data.total_results)
       setCanLoadMore(true)
+      setShowLoading(false)
     });
   }, [data])
 
   function loadMedia(page: number) {
     if (!isFetching && hasMore && setCanLoadMore) {
       setCanLoadMore(false)
+      setShowLoading(true)
       setPage(page)
     }
   }
@@ -261,16 +263,9 @@ function MediaGallery(props: MediaGalleryProps) {
 
   return (
     <Box>
-      <InfiniteScroll
-        pageStart={1}
-        loadMore={loadMedia}
-        hasMore={!isFetching && hasMore && canLoadMore}
-        loader={(
-          <Box key={taxon.id}>
-            <Loader size="xl" variant="bars" />
-          </Box>
-        )}
-      >
+      { data && data.total_results == 0 ? <Text>No media images found</Text> : null }
+
+      <InfiniteScroll pageStart={1} loadMore={loadMedia} hasMore={!isFetching && hasMore && canLoadMore}>
         { gallery.map((photos, index) => (
           <PhotoAlbum
             key={`${taxon.id}-${index}`}
@@ -290,6 +285,12 @@ function MediaGallery(props: MediaGalleryProps) {
           />
         ))}
       </InfiniteScroll>
+
+      <Box key={taxon.id}>
+        <Center>
+          { (!data || isFetching || showLoading) ? <Loader size="xl" variant="bars" /> : null }
+        </Center>
+      </Box>
     </Box>
   )
 }
