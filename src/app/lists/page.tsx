@@ -49,6 +49,9 @@ function ListTable() {
             loaderColor="green"
             totalRecords={data && data.total}
             onRowClick={setList}
+            page={1}
+            recordsPerPage={100}
+            onPageChange={() => {}}
           />
         </Grid.Col>
         <Grid.Col span="auto">
