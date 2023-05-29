@@ -53,6 +53,18 @@ interface UserTaxaList {
   records: UserTaxa[],
 };
 
+export interface NameList {
+  id: string,
+  name: string,
+  list_type: string,
+  description?: string,
+};
+
+interface NameLists {
+  total: number,
+  records: NameList[],
+};
+
 
 export interface UserTaxon {
   id: string,
@@ -124,6 +136,13 @@ export interface TaxaImport {
   description?: string,
 }
 
+export interface ListImport {
+  file: string,
+  name: string,
+  worker: string,
+  description?: string,
+}
+
 
 export interface Media {
   id: string,
@@ -169,7 +188,7 @@ const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const adminApi = createApi({
   reducerPath: 'admin',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute', 'Media'],
+  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute', 'Media', 'NameLists'],
   endpoints: (builder) => ({
 
     // Auth
@@ -200,6 +219,25 @@ export const adminApi = createApi({
     taxonAttributes: builder.query<TaxonAttribute[], string>({
       query: (uuid) => `taxa/${uuid}`,
     }),
+
+
+    //
+    // Lists
+    //
+    NameList: builder.query<NameLists, void>({
+      query: () => 'lists',
+      providesTags: (result) => {
+        if (result) {
+          return [
+            ...result.records.map(({ id }) => ({ type: 'NameLists', id } as const)),
+            { type: 'NameLists', id: 'LIST' },
+          ]
+        } else {
+          return [{ type: 'NameLists', id: 'LIST' }]
+        }
+      },
+    }),
+
 
     //
     // User Taxa Lists
@@ -392,6 +430,15 @@ export const adminApi = createApi({
         }
       },
     }),
+    createListImport: builder.mutation<null, Partial<ListImport>>({
+      query(data) {
+        return {
+          url: 'queue',
+          method: 'POST',
+          body: data,
+        }
+      },
+    }),
 
 
     //
@@ -448,6 +495,8 @@ export const {
   useTaxaListQuery,
   useTaxonAttributesQuery,
 
+  useNameListQuery,
+
   useUserTaxaListQuery,
   useGetUserTaxaQuery,
   useCreateUserTaxaMutation,
@@ -467,6 +516,7 @@ export const {
   useDeleteAttributeMutation,
 
   useCreateTaxaImportMutation,
+  useCreateListImportMutation,
 
   useMediaListQuery,
   useMainMediaQuery,

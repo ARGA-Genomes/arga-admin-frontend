@@ -70,6 +70,9 @@ function SideNav() {
         <Link href="/user_taxa">
           <NavLink color="violet" label="User Taxa" icon={<IconList/>} />
         </Link>
+        <Link href="/lists">
+          <NavLink color="violet" label="Lists" icon={<IconList/>} />
+        </Link>
         <Link href="/attributes">
           <NavLink color="green" label="Attributes" icon={<IconTags/>} />
         </Link>
@@ -111,7 +114,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient()
 
-  const preferredColorScheme = useColorScheme();
+  const preferredColorScheme = useColorScheme('dark');
   const [colorScheme, setColorScheme] = useState<ColorScheme>(preferredColorScheme);
   const toggleColorScheme = (value?: ColorScheme) =>
     setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
