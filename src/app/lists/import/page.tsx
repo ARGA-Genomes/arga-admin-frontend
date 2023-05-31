@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Box, Button, Container, Group, Paper, Text, TextInput, Textarea, Title } from "@mantine/core";
+import { Alert, Box, Button, Container, Group, Paper, Select, Text, TextInput, Textarea, Title } from "@mantine/core";
 import { IconAlertCircle, IconDeviceFloppy } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { FilePond } from 'react-filepond'
@@ -28,6 +28,7 @@ const SERVER_CONFIG = {
 function FileUpload() {
   const router = useRouter();
 
+  const [worker, setWorker] = useState<string | null>('import_specimen');
   const [newImport, { isLoading, isSuccess, isError, data, error }] = useCreateListImportMutation();
 
   useEffect(() => {
@@ -38,7 +39,7 @@ function FileUpload() {
     initialValues: {
       file: '',
       name: '',
-      worker: 'import_conservation_status',
+      worker,
       description: undefined,
     } as ListImport,
 
@@ -89,6 +90,16 @@ function FileUpload() {
 
         {processed && files.length > 0 &&
         <Box maw={600} mx="auto">
+          <Select
+            required
+            value={worker}
+            onChange={setWorker}
+            label="Select the type of list to import"
+            data={[
+              { value: 'import_specimen', label: 'Specimens' },
+              { value: 'import_conservation_status', label: 'Conservation Statuses' },
+            ]}
+          />
           <TextInput
             withAsterisk
             label="Name"
