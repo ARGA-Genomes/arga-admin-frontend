@@ -27,8 +27,6 @@ const SERVER_CONFIG = {
 
 function FileUpload() {
   const router = useRouter();
-
-  const [worker, setWorker] = useState<string | null>('import_specimen');
   const [newImport, { isLoading, isSuccess, isError, data, error }] = useCreateListImportMutation();
 
   useEffect(() => {
@@ -39,7 +37,7 @@ function FileUpload() {
     initialValues: {
       file: '',
       name: '',
-      worker,
+      worker: 'import_specimen',
       description: undefined,
     } as ListImport,
 
@@ -92,13 +90,12 @@ function FileUpload() {
         <Box maw={600} mx="auto">
           <Select
             required
-            value={worker}
-            onChange={setWorker}
             label="Select the type of list to import"
             data={[
               { value: 'import_specimen', label: 'Specimens' },
               { value: 'import_conservation_status', label: 'Conservation Statuses' },
             ]}
+            {...form.getInputProps('worker')}
           />
           <TextInput
             withAsterisk
