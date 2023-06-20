@@ -173,6 +173,15 @@ export interface SetMainMedia {
   source: string,
 }
 
+export interface UploadMainMedia {
+  file: string,
+  scientific_name: string,
+  publisher: string,
+  rights_holder: string,
+  license: string,
+  source?: string,
+}
+
 
 const baseQuery = fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_ARGA_API_URL, credentials: "include" });
 
@@ -486,6 +495,16 @@ export const adminApi = createApi({
       invalidatesTags: () => [{ type: 'Media', id: 'MAIN' }],
     }),
 
+    uploadMainMedia: builder.mutation<null, UploadMainMedia>({
+      query(data) {
+        return {
+          url: 'media/upload_main_image',
+          method: 'POST',
+          body: data,
+        }
+      },
+    }),
+
   }),
 });
 
@@ -521,4 +540,5 @@ export const {
   useMediaListQuery,
   useMainMediaQuery,
   useSetMainMediaMutation,
+  useUploadMainMediaMutation,
 } = adminApi;

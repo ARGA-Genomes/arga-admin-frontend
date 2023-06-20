@@ -1,17 +1,36 @@
 'use client';
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
-import { Taxon, useMainMediaQuery, useSetMainMediaMutation, useTaxaListQuery } from "@/services/admin";
-import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center } from "@mantine/core";
-import { IconPinned } from "@tabler/icons-react";
+import { Taxon, UploadMainMedia, useMainMediaQuery, useSetMainMediaMutation, useTaxaListQuery, useUploadMainMediaMutation } from "@/services/admin";
+import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center, Modal, Alert, TextInput, Select } from "@mantine/core";
+import { IconAlertCircle, IconDeviceFloppy, IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { getImageSize } from 'react-image-size';
 import PhotoAlbum from "react-photo-album";
 import InfiniteScroll from 'react-infinite-scroller';
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useListState } from "@mantine/hooks";
+import { useDisclosure, useListState } from "@mantine/hooks";
 import { Media, usePhotoListQuery } from "@/services/inaturalist";
+
+import { FilePond } from 'react-filepond'
+import { FilePondFile } from 'filepond'
+import 'filepond/dist/filepond.min.css'
+import { FormErrors, isNotEmpty, useForm } from "@mantine/form";
+import { RequestErrorText } from "@/components/request-error";
+
+
+const SERVER_CONFIG = {
+  url: process.env.NEXT_PUBLIC_ARGA_API_URL,
+  process: {
+    url: '/media/upload',
+    withCredentials: true,
+  },
+  revert: null,
+  restore: null,
+  load: null,
+  fetch: null,
+};
 
 
 const COLUMNS = [
@@ -148,10 +167,15 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
     }
   }
 
+  const [opened, { open, close }] = useDisclosure(false);
+
 
   return (
     <Card withBorder shadow="sm" radius="md">
-    <LoadingOverlay visible={isLoading}/>
+      <LoadingOverlay visible={isLoading}/>
+      <Modal opened={opened} onClose={close} title="Upload custom image">
+        <ImageUpload scientificName={taxon.scientific_name || ''} onUploaded={() => close()} />
+      </Modal>
       <Group position="apart">
         <Stack spacing="xs" align="flex-start" justify="flex-start">
           <Title order={4}>{taxon.canonical_name}</Title>
@@ -165,9 +189,11 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
           </Group>
           : null }
         </Stack>
-        { selected ?
-        <Button onClick={setMainMedia} loading={mutResult.isLoading}>Set as main</Button>
-        : null }
+
+        <Group>
+          { selected ? <Button onClick={setMainMedia} loading={mutResult.isLoading}>Set as main</Button> : null }
+          <Button onClick={open}>Upload image</Button>
+        </Group>
       </Group>
 
       <Card.Section mt="sm">
@@ -312,6 +338,125 @@ function PhotoPreview(props: PhotoPreviewProps) {
     >
       { props.children }
     </Indicator>
+  )
+}
+
+
+interface ImageUploadProps {
+  scientificName: string,
+  onUploaded: () => void,
+}
+
+function ImageUpload({ scientificName, onUploaded }: ImageUploadProps) {
+  const [newMedia, { isLoading, isSuccess, isError, data, error }] = useUploadMainMediaMutation();
+
+  useEffect(() => {
+    if (isSuccess) onUploaded();
+  }, [data, isSuccess]);
+
+  const form = useForm({
+    initialValues: {
+      file: '',
+      publisher: '',
+      rights_holder: '',
+      license: '',
+      source: undefined,
+      scientific_name: scientificName,
+    } as UploadMainMedia,
+
+    validate: {
+      publisher: isNotEmpty('Enter a publisher for the image. eg. "iNaturalist"'),
+      rights_holder: isNotEmpty('Enter a rights holder for the image. eg. "Mary Photographer"'),
+      license: isNotEmpty('Enter a license for the image. eg. "cc-by"'),
+    },
+
+    transformValues: (values) => {
+      console.log(values);
+      let elements = document.getElementsByName("fileUuid");
+      return {
+        ...values,
+        file: elements[0]?.getAttribute("value") || '',
+      }
+    },
+  });
+
+  const [files, setFiles] = useState<FilePondFile[]>([])
+  const [processed, setProcessed] = useState<boolean>(false)
+  const [fileError, setFileError] = useState<string | undefined>(undefined)
+
+  const formErrors = (errors: FormErrors) => {
+    if (errors.file) {
+      setFileError(errors.file.toString());
+    }
+  };
+
+  const label = 'Drag & Drop your files or <span class="filepond--label-action">Browse</span>';
+  return (
+    <form onSubmit={form.onSubmit(newMedia, formErrors)}>
+        <FilePond
+          required={false}
+          allowMultiple={false}
+          server={SERVER_CONFIG}
+          name="fileUuid"
+          onupdatefiles={files => { setFiles(files); setProcessed(false) }}
+          onprocessfiles={() => setProcessed(true)}
+          labelIdle={label}
+        />
+        {fileError && <Text fz="xs" c="red" mb={20}>{fileError}</Text> }
+
+
+        {isError &&
+         <Alert icon={<IconAlertCircle />} title="Failed!" color="red" radius="md">
+           <Text>Could not save image due to the following reason:</Text>
+           <RequestErrorText error={error} />
+         </Alert>
+        }
+
+        {processed && files.length > 0 &&
+        <Box maw={600} mx="auto">
+          <TextInput
+            required
+            withAsterisk
+            label="Publisher"
+            placeholder="Publisher"
+            {...form.getInputProps('publisher')}
+          />
+          <TextInput
+            required
+            withAsterisk
+            label="Rights Holder"
+            placeholder="Rights Holder"
+            {...form.getInputProps('rights_holder')}
+          />
+
+          <Select
+            required
+            withAsterisk
+            label="License"
+            data={[
+              { value: 'cc-by', label: 'CC BY' },
+              { value: 'cc-by-sa', label: 'CC BY-SA' },
+              { value: 'cc-by-nc', label: 'CC BY-NC' },
+              { value: 'cc-by-nc-sa', label: 'CC BY-NC-SA' },
+              { value: 'cc-by-nd', label: 'CC BY-ND' },
+              { value: 'cc-by-nc-nd', label: 'CC BY-NC-ND' },
+              { value: 'cc0', label: 'CC0' },
+            ]}
+            {...form.getInputProps('license')}
+          />
+
+          <TextInput
+            label="Source"
+            placeholder="Source"
+            {...form.getInputProps('source')}
+          />
+
+          <Group position="right" mt="md">
+            <Button type="submit" leftIcon={<IconDeviceFloppy />} loading={isLoading || isSuccess}>Save</Button>
+          </Group>
+        </Box>
+        }
+    </form>
   )
 }
 
