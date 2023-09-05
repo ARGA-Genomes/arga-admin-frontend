@@ -1,56 +1,39 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useUserTaxaListQuery } from "@/services/admin";
+import { useDatasetsQuery } from "@/services/admin";
 import { Grid, Loader, Paper, Select, TextInput} from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
 
 
-export interface TaxaListFilter {
-  source: string,
-  uuid?: string,
-}
-
 export interface FilterItem {
   label: string,
   value: string,
-  source: string,
 }
 
 type FilterProps = {
   onSearchChanged: (text: string) => void,
-  onTaxaListSelected: (filter: TaxaListFilter) => void,
+  onDatasetSelected: (filter: Dataset) => void,
 }
 
 export function Filter(props: FilterProps) {
-  const { isLoading, data } = useUserTaxaListQuery();
-  const [sources, setSources] = useState<FilterItem[]>([]);
+  const { isLoading, data } = useDatasetsQuery();
+  const [datasets, setDatasets] = useState<FilterItem[]>([]);
 
   useEffect(() => {
     if (data) {
-      const records = data.records.map(list => ({
-        label: list.name,
-        value: list.id,
-        source: 'user_taxa'
+      const records = data.map(dataset => ({
+        label: dataset.name,
+        value: dataset.id,
       }));
 
-      const builtin = [{
-        label: 'GBIF',
-        value: 'gbif',
-        source: 'gbif',
-      }];
-
-      setSources(builtin.concat(records));
+      setDatasets(records);
     }
-  }, [data, setSources]);
+  }, [data, setDatasets]);
 
-  const filterByTaxa = (val: string) => {
-    if (val === 'gbif') {
-      props.onTaxaListSelected({ source: 'gbif' });
-    } else {
-      props.onTaxaListSelected({ source: 'user_taxa', uuid: val });
-    }
+  const filterByDataset = (uuid: string) => {
+    props.onDatasetSelected(uuid);
   }
 
   const [value, setValue] = useState('');
@@ -72,11 +55,11 @@ export function Filter(props: FilterProps) {
         </Grid.Col>
         <Grid.Col span={4}>
           <Select
-            label="Taxa List"
-            placeholder="Filter by Taxa List"
-            data={sources}
+            label="Datasets"
+            placeholder="Filter by Dataset"
+            data={datasets}
             searchable
-            onChange={filterByTaxa}
+            onChange={filterByDataset}
             rightSection={ isLoading ? <Loader variant="bars" /> : null }
             rightSectionWidth={100}
           />

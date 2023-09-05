@@ -1,7 +1,7 @@
 'use client';
 
 import { Filter, TaxaListFilter } from "@/components/taxa-filter";
-import { Taxon, UploadMainMedia, useMainMediaQuery, useSetMainMediaMutation, useTaxaListQuery, useUploadMainMediaMutation } from "@/services/admin";
+import { Taxon, UploadMainMedia, useMainMediaQuery, useSetMainMediaMutation, useTaxaQuery, useUploadMainMediaMutation } from "@/services/admin";
 import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center, Modal, Alert, TextInput, Select } from "@mantine/core";
 import { IconAlertCircle, IconDeviceFloppy, IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
@@ -48,7 +48,7 @@ interface Photo {
 
 function Layout() {
   const [search, setSearch] = useState<string | undefined>(undefined);
-  const [taxaList, setTaxaList] = useState<TaxaListFilter | null>(null);
+  const [dataset, setDataset] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   const [taxon, setTaxon] = useState<Taxon | undefined>(undefined);
@@ -57,14 +57,13 @@ function Layout() {
   useEffect(() => {
     handlers.setState([])
     setPage(1)
-  }, [search, taxaList])
+  }, [search, dataset])
 
-  const { isFetching, isSuccess, data } = useTaxaListQuery({
+  const { isFetching, isSuccess, data } = useTaxaQuery({
     page,
     pageSize: 100,
     search: search,
-    source: taxaList?.source,
-    taxaListsId: taxaList?.uuid,
+    datasetId: dataset,
   })
 
   useEffect(() => {
@@ -85,7 +84,7 @@ function Layout() {
     <Box>
       <Filter
         onSearchChanged={setSearch}
-        onTaxaListSelected={setTaxaList}
+        onDatasetSelected={setDataset}
       />
       <Grid>
         <Grid.Col span={3}>

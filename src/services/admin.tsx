@@ -1,6 +1,19 @@
 import { BaseQueryFn, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
+export interface Dataset {
+  id: string,
+  global_id: string,
+  name: string,
+  short_name: string,
+  description?: string,
+};
+
+interface Datasets {
+  total: number,
+  records: Dataset[],
+};
+
 export interface Taxon {
   id: string,
   scientific_name?: string,
@@ -211,7 +224,28 @@ export const adminApi = createApi({
       },
     }),
 
-    taxaList: builder.query<TaxaList, TaxaListParams>({
+    //
+    // Datasets
+    //
+    Datasets: builder.query<Datasets, void>({
+      query: () => 'taxa/datasets',
+      providesTags: (result) => {
+        if (result) {
+          return [
+            ...result.map(({ id }) => ({ type: 'Datasets', id } as const)),
+            { type: 'Datasets', id: 'LIST' },
+          ]
+        } else {
+          return [{ type: 'Datasets', id: 'LIST' }]
+        }
+      },
+    }),
+
+
+    //
+    // Taxa
+    //
+    taxa: builder.query<Taxa, TaxaListParams>({
       query(params) {
         let paramStrings = [
           `page=${params.page}`,
@@ -219,7 +253,7 @@ export const adminApi = createApi({
         ];
         if (params.search) paramStrings.push(`q=${params.search}`);
         if (params.source) paramStrings.push(`source=${params.source}`);
-        if (params.taxaListsId) paramStrings.push(`taxa_lists_id=${params.taxaListsId}`);
+        if (params.datasetId) paramStrings.push(`dataset_id=${params.datasetId}`);
 
         return `taxa?${paramStrings.join('&')}`
       },
@@ -511,7 +545,9 @@ export const adminApi = createApi({
 export const {
   useLoginMutation,
 
-  useTaxaListQuery,
+  useDatasetsQuery,
+
+  useTaxaQuery,
   useTaxonAttributesQuery,
 
   useNameListQuery,
