@@ -9,11 +9,6 @@ export interface Dataset {
   description?: string,
 };
 
-interface Datasets {
-  total: number,
-  records: Dataset[],
-};
-
 export interface Taxon {
   id: string,
   scientific_name?: string,
@@ -226,12 +221,12 @@ export const adminApi = createApi({
     //
     // Datasets
     //
-    Datasets: builder.query<Datasets, void>({
+    Datasets: builder.query<Dataset[], void>({
       query: () => 'taxa/datasets',
       providesTags: (result) => {
         if (result) {
           return [
-            ...result.records.map(({ id }) => ({ type: 'Datasets', id } as const)),
+            ...result.map(({ id }) => ({ type: 'Datasets', id } as const)),
             { type: 'Datasets', id: 'LIST' },
           ]
         } else {

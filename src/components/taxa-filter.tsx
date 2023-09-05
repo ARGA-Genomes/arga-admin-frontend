@@ -23,7 +23,7 @@ export function Filter(props: FilterProps) {
 
   useEffect(() => {
     if (data) {
-      const records = data.records.map((dataset: Dataset) => ({
+      const records = data.map((dataset: Dataset) => ({
         label: dataset.name,
         value: dataset.id,
       }));
