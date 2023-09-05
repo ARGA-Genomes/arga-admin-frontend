@@ -2,7 +2,8 @@
 
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
-import { Taxon, TaxonAttribute, useTaxaListQuery, useTaxonAttributesQuery, useUserTaxaListQuery } from "@/services/admin";
+import { Filter } from "@/components/taxa-filter";
+import { Taxon, TaxonAttribute, useTaxaQuery, useTaxonAttributesQuery, useUserTaxaListQuery } from "@/services/admin";
 import { Box, Grid, Loader, Paper, Select, TextInput, Title, Text } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
@@ -69,26 +70,25 @@ function TaxonDetails({ taxon }: { taxon: Taxon }) {
 
 function TaxaTable() {
   const [search, setSearch] = useState<string | undefined>(undefined);
-  const [taxaList, setTaxaList] = useState<TaxaListFilter | null>(null);
+  const [datasetId, setDatasetId] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZES[1]);
   useEffect(() => { setPage(1); }, [pageSize]);
 
   const [taxon, setTaxon] = useState<Taxon | undefined>(undefined);
 
-  const { isFetching, data } = useTaxaListQuery({
+  const { isFetching, data } = useTaxaQuery({
     page,
     pageSize,
-    search: search,
-    source: taxaList?.source,
-    taxaListsId: taxaList?.uuid,
+    search,
+    datasetId,
   })
 
   return (
     <Box>
       <Filter
         onSearchChanged={setSearch}
-        onTaxaListSelected={setTaxaList}
+        onDatasetSelected={setDatasetId}
       />
       <Grid>
         <Grid.Col span={3}>
@@ -120,86 +120,6 @@ function TaxaTable() {
       </Grid>
     </Box>
   );
-}
-
-
-interface TaxaListFilter {
-  source: string,
-  uuid?: string,
-}
-
-interface FilterItem {
-  label: string,
-  value: string,
-  source: string,
-}
-
-type FilterProps = {
-  onSearchChanged: (text: string) => void,
-  onTaxaListSelected: (filter: TaxaListFilter) => void,
-}
-
-function Filter(props: FilterProps) {
-  const { isLoading, data } = useUserTaxaListQuery();
-  const [sources, setSources] = useState<FilterItem[]>([]);
-
-  useEffect(() => {
-    if (data) {
-      const records = data.records.map(list => ({
-        label: list.name,
-        value: list.id,
-        source: 'user_taxa'
-      }));
-
-      const builtin = [{
-        label: 'GBIF',
-        value: 'gbif',
-        source: 'gbif',
-      }];
-
-      setSources(builtin.concat(records));
-    }
-  }, [data, setSources]);
-
-  const filterByTaxa = (val: string) => {
-    if (val === 'gbif') {
-      props.onTaxaListSelected({ source: 'gbif' });
-    } else {
-      props.onTaxaListSelected({ source: 'user_taxa', uuid: val });
-    }
-  }
-
-  const [value, setValue] = useState('');
-  const [debounced] = useDebouncedValue(value, 500);
-  useEffect(() => props.onSearchChanged(debounced), [debounced, props]);
-
-  return (
-    <Paper p={20} my={20}>
-      <Grid>
-        <Grid.Col span={4}>
-          <TextInput
-            value={value}
-            label="Search"
-            placeholder="Search by scientific name"
-            onChange={ev => setValue(ev.currentTarget.value)}
-            rightSection={<IconSearch size={20} />}
-            rightSectionWidth={50}
-          />
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Select
-            label="Taxa List"
-            placeholder="Filter by Taxa List"
-            data={sources}
-            searchable
-            onChange={filterByTaxa}
-            rightSection={ isLoading ? <Loader variant="bars" /> : null }
-            rightSectionWidth={100}
-          />
-        </Grid.Col>
-      </Grid>
-    </Paper>
-  )
 }
 
 

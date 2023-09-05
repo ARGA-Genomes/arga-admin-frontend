@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useDatasetsQuery } from "@/services/admin";
+import { Dataset, useDatasetsQuery } from "@/services/admin";
 import { Grid, Loader, Paper, Select, TextInput} from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons-react";
@@ -14,7 +14,7 @@ export interface FilterItem {
 
 type FilterProps = {
   onSearchChanged: (text: string) => void,
-  onDatasetSelected: (filter: Dataset) => void,
+  onDatasetSelected: (filter: string) => void,
 }
 
 export function Filter(props: FilterProps) {
@@ -23,7 +23,7 @@ export function Filter(props: FilterProps) {
 
   useEffect(() => {
     if (data) {
-      const records = data.map(dataset => ({
+      const records = data.records.map((dataset: Dataset) => ({
         label: dataset.name,
         value: dataset.id,
       }));

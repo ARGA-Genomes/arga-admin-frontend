@@ -34,15 +34,14 @@ export interface Taxon {
   genus?: string,
 };
 
-type TaxaListParams = {
+type TaxaParams = {
   page: number,
   pageSize: number,
   search?: string,
-  source?: string,
-  taxaListsId?: string,
+  datasetId?: string,
 };
 
-interface TaxaList {
+interface Taxa {
   total: number,
   records: Taxon[],
 };
@@ -210,7 +209,7 @@ const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const adminApi = createApi({
   reducerPath: 'admin',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['UserTaxa', 'UserTaxon', 'Attribute', 'Media', 'NameLists'],
+  tagTypes: ['Datasets', 'UserTaxa', 'UserTaxon', 'Attribute', 'Media', 'NameLists'],
   endpoints: (builder) => ({
 
     // Auth
@@ -232,7 +231,7 @@ export const adminApi = createApi({
       providesTags: (result) => {
         if (result) {
           return [
-            ...result.map(({ id }) => ({ type: 'Datasets', id } as const)),
+            ...result.records.map(({ id }) => ({ type: 'Datasets', id } as const)),
             { type: 'Datasets', id: 'LIST' },
           ]
         } else {
@@ -245,14 +244,13 @@ export const adminApi = createApi({
     //
     // Taxa
     //
-    taxa: builder.query<Taxa, TaxaListParams>({
+    taxa: builder.query<Taxa, TaxaParams>({
       query(params) {
         let paramStrings = [
           `page=${params.page}`,
           `page_size=${params.pageSize}`,
         ];
         if (params.search) paramStrings.push(`q=${params.search}`);
-        if (params.source) paramStrings.push(`source=${params.source}`);
         if (params.datasetId) paramStrings.push(`dataset_id=${params.datasetId}`);
 
         return `taxa?${paramStrings.join('&')}`
