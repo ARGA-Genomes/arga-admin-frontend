@@ -170,7 +170,7 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
         publisher: selected.publisher || "",
         rights_holder: extractRightsHolder(selected.rights_holder),
         license: selected.license || "",
-        source: selected.source || "",
+        source: selected.reference_url || "",
       });
     }
   }
@@ -385,7 +385,7 @@ function INaturalistMediaGallery(props: INaturalistMediaGalleryProps) {
         height: dimensions.height,
         license: media.license_code,
         rights_holder: media.attribution,
-        source: media.source,
+        reference_url: media.source,
       };
     });
 
