@@ -1,8 +1,8 @@
 'use client';
 
 import { Filter } from "@/components/taxa-filter";
-import { Taxon, UploadMainMedia, useMainMediaQuery, useSetMainMediaMutation, useTaxaQuery, useUploadMainMediaMutation } from "@/services/admin";
-import { Box, Grid, Image, Title, Text, Card, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center, Modal, Alert, TextInput, Select } from "@mantine/core";
+import { Taxon, UploadMainMedia, useMainMediaQuery, useMediaListQuery, useSetMainMediaMutation, useTaxaQuery, useUploadMainMediaMutation } from "@/services/admin";
+import { Box, Grid, Image, Title, Text, Divider, Group, Stack, Button, Indicator, Loader, LoadingOverlay, Center, Modal, Alert, TextInput, Select, Tabs, Paper } from "@mantine/core";
 import { IconAlertCircle, IconDeviceFloppy, IconPinned } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { getImageSize } from 'react-image-size';
@@ -11,7 +11,7 @@ import InfiniteScroll from 'react-infinite-scroller';
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useDisclosure, useListState } from "@mantine/hooks";
-import { Media, usePhotoListQuery } from "@/services/inaturalist";
+import { usePhotoListQuery } from "@/services/inaturalist";
 
 import { FilePond } from 'react-filepond'
 import { FilePondFile } from 'filepond'
@@ -42,7 +42,12 @@ interface Photo {
   width: number,
   height: number,
   key: string,
-  media: Media,
+  license?: string,
+  rights_holder?: string,
+  publisher?: string,
+  creator?: string,
+  reference_url?: string,
+  source?: string,
 }
 
 
@@ -125,8 +130,8 @@ function extractRightsHolder(attribution?: string) {
 }
 
 function MediaEditor({ taxon }: { taxon: Taxon }) {
-  const [curated, setCurated] = useState<Media | undefined>(undefined)
-  const [selected, setSelected] = useState<Media | undefined>(undefined)
+  const [curated, setCurated] = useState<Photo | undefined>(undefined)
+  const [selected, setSelected] = useState<Photo | undefined>(undefined)
 
   const large = (identifier: string) => {
     return identifier.replace("original", "medium");
@@ -135,15 +140,19 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
   const { data, isLoading } = useMainMediaQuery(taxon.scientific_name || '')
   useEffect(() => {
     if (data) {
-      const media = {
+      const photo = {
         id: 0,
-        url: data.url,
-        license_code: data.license || "",
-        attribution: data.rights_holder || "",
-        source: data.source || "",
+        src: data.url,
+        width: 0,
+        height: 0,
+        key: data.id,
+        license: data.license,
+        rights_holder: data.rights_holder,
+        publisher: data.publisher,
+        source: data.source,
       };
-      setCurated(media)
-      setSelected(media)
+      setCurated(photo)
+      setSelected(photo)
     } else {
       setCurated(undefined)
       setSelected(undefined)
@@ -156,12 +165,12 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
   const setMainMedia = () => {
     if (selected && taxon.canonical_name) {
       mut({
-        url: selected.url.replaceAll("small", "original"),
+        url: selected.src.replaceAll("small", "original"),
         scientific_name: taxon.scientific_name || '',
-        publisher: "iNaturalist",
-        rights_holder: extractRightsHolder(selected.attribution),
-        license: selected.license_code,
-        source: selected.source,
+        publisher: selected.publisher || "",
+        rights_holder: extractRightsHolder(selected.rights_holder),
+        license: selected.license || "",
+        source: selected.source || "",
       });
     }
   }
@@ -170,20 +179,21 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
 
 
   return (
-    <Card withBorder shadow="sm" radius="md">
+    <Paper withBorder shadow="sm" radius="md" p="lg">
       <LoadingOverlay visible={isLoading}/>
       <Modal opened={opened} onClose={close} title="Upload custom image">
         <ImageUpload scientificName={taxon.scientific_name || ''} onUploaded={() => close()} />
       </Modal>
+
       <Group position="apart">
         <Stack spacing="xs" align="flex-start" justify="flex-start">
           <Title order={4}>{taxon.canonical_name}</Title>
           { selected ?
           <Group>
-            <Text color="dimmed" size="sm">&copy; {extractRightsHolder(selected.attribution)} ({selected.license_code})</Text>
+            <Text color="dimmed" size="sm">&copy; {extractRightsHolder(selected.rights_holder)} ({selected.license})</Text>
             <Divider size="xs" orientation="vertical" />
             <Text color="dimmed" size="sm">
-              <Link href={selected.url || "#"} target="_blank">iNaturalist</Link>
+              <Link href={selected.reference_url || selected.src} target="_blank">{selected.publisher}</Link>
             </Text>
           </Group>
           : null }
@@ -195,10 +205,10 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
         </Group>
       </Group>
 
-      <Card.Section mt="sm">
+      <Box my="lg">
         { selected ?
         <Image
-          src={large(selected.url.replaceAll("small", "medium") || '')}
+          src={large(selected.src.replaceAll("small", "medium") || '')}
           radius="sm"
           height={500}
           fit="contain"
@@ -206,28 +216,137 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
         />
         : null
         }
-      </Card.Section>
+      </Box>
 
-      <Card.Section inheritPadding mt="sm" pb="md">
-        <MediaGallery
-          taxon={taxon}
-          key={taxon.id}
-          mainMedia={curated}
-          onSelected={(photo) => setSelected(photo.media)}
-        />
-      </Card.Section>
-    </Card>
+      <Box my="lg">
+        <Tabs defaultValue="vic_museum">
+          <Tabs.List>
+            <Tabs.Tab value="vic_museum">Vic Museum</Tabs.Tab>
+            <Tabs.Tab value="inaturalist">iNaturalist</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="vic_museum">
+            <MediaGallery
+              taxon={taxon}
+              key={taxon.id}
+              mainMedia={curated}
+              onSelected={(photo) => setSelected(photo)}
+            />
+          </Tabs.Panel>
+
+          <Tabs.Panel value="inaturalist">
+            <INaturalistMediaGallery
+              taxon={taxon}
+              key={taxon.id}
+              mainMedia={curated}
+              onSelected={(photo) => setSelected(photo)}
+            />
+          </Tabs.Panel>
+        </Tabs>
+      </Box>
+    </Paper>
   )
 }
 
 
 interface MediaGalleryProps {
   taxon: Taxon,
-  mainMedia?: Media,
+  mainMedia?: Photo,
   onSelected: (photo: Photo) => void,
 }
 
 function MediaGallery(props: MediaGalleryProps) {
+  const { taxon, onSelected } = props;
+
+  const [page, setPage] = useState(1)
+
+  const { isFetching, data } = useMediaListQuery({
+    scientificName: taxon.scientific_name || '',
+    page: page,
+    pageSize: 10,
+  });
+
+  const [gallery, handlers] = useListState<Photo[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [canLoadMore, setCanLoadMore] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
+  const [loaded, setLoaded] = useState(0);
+
+  function loadMedia(page: number) {
+    if (!isFetching && hasMore && setCanLoadMore) {
+      setCanLoadMore(false)
+      setShowLoading(true)
+      setPage(page)
+    }
+  }
+
+  useEffect(() => {
+    if (!data) return;
+
+    let photos = data.records.map(media => {
+      return {
+        src: media.url,
+        key: media.id,
+        width: media.width || 100,
+        height: media.height || 100,
+        reference_url: media.reference_url,
+        source: media.source,
+        creator: media.creator,
+        publisher: media.publisher,
+        license: media.license,
+        rights_holder: media.rights_holder,
+      }
+    });
+
+    handlers.append(photos);
+    setLoaded(loaded + photos.length)
+    setHasMore(loaded < data.total)
+    setCanLoadMore(true)
+    setShowLoading(false)
+  }, [data]);
+
+  return (
+    <Box>
+      { data && data.total === 0 && loaded === 0 ? <Text>No media images found</Text> : null }
+
+      <InfiniteScroll pageStart={1} loadMore={loadMedia} hasMore={!isFetching && hasMore && canLoadMore}>
+        { gallery?.map((photos, index) => (
+          <PhotoAlbum
+            key={`${taxon.id}-${index}`}
+            layout="rows"
+            photos={photos}
+            spacing={5}
+            targetRowHeight={200}
+            componentsProps={{ containerProps: { style: { paddingBottom: 5 } } }}
+            onClick={({ photo }) => onSelected(photo)}
+            renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
+              <div style={{ position: "relative", ...wrapperStyle }}>
+                <PhotoPreview photo={photo} showPin={props.mainMedia?.src == photo.src} >
+                  {renderDefaultPhoto({ wrapped: true })}
+                </PhotoPreview>
+              </div>
+            )}
+          />
+        ))}
+      </InfiniteScroll>
+
+      <Box key={taxon.id}>
+        <Center>
+          { (!data || isFetching || showLoading) ? <Loader size="xl" variant="bars" /> : null }
+        </Center>
+      </Box>
+    </Box>
+  )
+}
+
+
+interface INaturalistMediaGalleryProps {
+  taxon: Taxon,
+  mainMedia?: Photo,
+  onSelected: (photo: Photo) => void,
+}
+
+function INaturalistMediaGallery(props: INaturalistMediaGalleryProps) {
   const { taxon, onSelected } = props;
 
   const [page, setPage] = useState(1)
@@ -264,7 +383,9 @@ function MediaGallery(props: MediaGalleryProps) {
         key: media.url,
         width: dimensions.width,
         height: dimensions.height,
-        media,
+        license: media.license_code,
+        rights_holder: media.attribution,
+        source: media.source,
       };
     });
 
@@ -302,7 +423,7 @@ function MediaGallery(props: MediaGalleryProps) {
             onClick={({ photo }) => onSelected(photo)}
             renderPhoto={({ photo, wrapperStyle, renderDefaultPhoto }) => (
               <div style={{ position: "relative", ...wrapperStyle }}>
-                <PhotoPreview photo={photo} showPin={props.mainMedia?.id == photo.media.id} >
+                <PhotoPreview photo={photo} showPin={props.mainMedia?.src == photo.src} >
                   {renderDefaultPhoto({ wrapped: true })}
                 </PhotoPreview>
               </div>
@@ -319,6 +440,7 @@ function MediaGallery(props: MediaGalleryProps) {
     </Box>
   )
 }
+
 
 interface PhotoPreviewProps {
   photo: Photo,
@@ -370,7 +492,6 @@ function ImageUpload({ scientificName, onUploaded }: ImageUploadProps) {
     },
 
     transformValues: (values) => {
-      console.log(values);
       let elements = document.getElementsByName("fileUuid");
       return {
         ...values,

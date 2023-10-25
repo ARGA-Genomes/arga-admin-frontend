@@ -154,7 +154,11 @@ export interface ListImport {
 export interface Media {
   id: string,
   url: string,
+  width?: number,
+  height?: number,
+  reference_url?: string,
   source?: string,
+  creator?: string,
   publisher?: string,
   license?: string,
   rights_holder?: string,
