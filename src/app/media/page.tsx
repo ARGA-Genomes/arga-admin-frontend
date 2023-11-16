@@ -219,13 +219,13 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
       </Box>
 
       <Box my="lg">
-        <Tabs defaultValue="vic_museum">
+        <Tabs defaultValue="imported">
           <Tabs.List>
-            <Tabs.Tab value="vic_museum">Vic Museum</Tabs.Tab>
+            <Tabs.Tab value="imported">Imported</Tabs.Tab>
             <Tabs.Tab value="inaturalist">iNaturalist</Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="vic_museum">
+          <Tabs.Panel value="imported">
             <MediaGallery
               taxon={taxon}
               key={taxon.id}
@@ -261,7 +261,7 @@ function MediaGallery(props: MediaGalleryProps) {
   const [page, setPage] = useState(1)
 
   const { isFetching, data } = useMediaListQuery({
-    scientificName: taxon.scientific_name || '',
+    scientificName: encodeURIComponent(taxon.scientific_name || ''),
     page: page,
     pageSize: 10,
   });
