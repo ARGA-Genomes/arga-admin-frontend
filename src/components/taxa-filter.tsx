@@ -32,8 +32,8 @@ export function Filter(props: FilterProps) {
     }
   }, [data, setDatasets]);
 
-  const filterByDataset = (uuid: string) => {
-    props.onDatasetSelected(uuid);
+  const filterByDataset = (uuid: string | null) => {
+    if (uuid) props.onDatasetSelected(uuid);
   }
 
   const [value, setValue] = useState('');

@@ -1,6 +1,36 @@
 import { BaseQueryFn, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 
+export interface Classification {
+  id: string,
+  dataset_id: string,
+  parent_id: string,
+  taxon_id: string,
+  rank: string,
+  accepted_name_usage?: string,
+  original_name_usage?: string,
+  scientific_name: string,
+  scientific_name_authorship?: string,
+  canonical_name: string,
+  nomenclatural_code?: string,
+  status: string,
+  citation?: string,
+  vernacular_names?: string,
+  alternative_names?: string,
+  description?: string,
+  remark?: string,
+}
+
+type ClassificationsParams = {
+  parent: string,
+};
+
+
+export interface ClassificationOption {
+  id: string,
+  scientific_name: string,
+}
+
 export interface Dataset {
   id: string,
   global_id: string,
@@ -208,7 +238,7 @@ const baseQueryWithAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const adminApi = createApi({
   reducerPath: 'admin',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['Datasets', 'UserTaxa', 'UserTaxon', 'Attribute', 'Media', 'NameLists'],
+  tagTypes: ['Classifications', 'Datasets', 'UserTaxa', 'UserTaxon', 'Attribute', 'Media', 'NameLists'],
   endpoints: (builder) => ({
 
     // Auth
@@ -221,6 +251,62 @@ export const adminApi = createApi({
         }
       },
     }),
+
+
+    //
+    // CLassifications
+    //
+    classifications: builder.query<Classification[], ClassificationsParams>({
+      query(params) {
+        let paramStrings = [
+          `parent=${params.parent}`,
+        ];
+
+        return `classifications?${paramStrings.join('&')}`
+      },
+    }),
+
+    createClassifications: builder.mutation<Classification[], Partial<Classification>[]>({
+      query(data) {
+        return {
+          url: 'classifications',
+          method: 'POST',
+          body: data,
+        }
+      },
+      invalidatesTags: [{ type: 'Classifications', id: 'LIST' }],
+    }),
+
+    updateClassifications: builder.mutation<Classification[], Partial<Classification>[]>({
+      query(data) {
+        return {
+          url: 'classifications',
+          method: 'PUT',
+          body: data,
+        }
+      },
+      invalidatesTags: [{ type: 'Classifications', id: 'LIST' }],
+    }),
+
+    deleteClassifications: builder.mutation<Classification[], string[]>({
+      query(data) {
+        return {
+          url: 'classifications',
+          method: 'DELETE',
+          body: data,
+        }
+      },
+      invalidatesTags: [{ type: 'Classifications', id: 'LIST' }],
+    }),
+
+
+    //
+    // CLassification options
+    //
+    classificationOptions: builder.query<Record<string, ClassificationOption[]>, void>({
+      query: () => 'classification_options',
+    }),
+
 
     //
     // Datasets
@@ -542,6 +628,12 @@ export const adminApi = createApi({
 export const {
   useLoginMutation,
 
+  useClassificationsQuery,
+  useCreateClassificationsMutation,
+  useUpdateClassificationsMutation,
+  useDeleteClassificationsMutation,
+
+  useClassificationOptionsQuery,
   useDatasetsQuery,
 
   useTaxaQuery,

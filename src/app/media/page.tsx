@@ -94,8 +94,6 @@ function Layout() {
       <Grid>
         <Grid.Col span={3}>
           <DataTable
-            withBorder
-            borderRadius="md"
             minHeight={200}
             height={800}
             striped
@@ -103,10 +101,9 @@ function Layout() {
             records={records}
             columns={COLUMNS}
             fetching={isFetching}
-            loaderVariant="bars"
             loaderSize="xl"
             loaderColor="green"
-            onRowClick={setTaxon}
+            onRowClick={({ record }) => setTaxon(record)}
             onScrollToBottom={loadMoreRecords}
           />
         </Grid.Col>
@@ -185,14 +182,14 @@ function MediaEditor({ taxon }: { taxon: Taxon }) {
         <ImageUpload scientificName={taxon.scientific_name || ''} onUploaded={() => close()} />
       </Modal>
 
-      <Group position="apart">
-        <Stack spacing="xs" align="flex-start" justify="flex-start">
+      <Group justify="apart">
+        <Stack gap="xs" align="flex-start" justify="flex-start">
           <Title order={4}>{taxon.canonical_name}</Title>
           { selected ?
           <Group>
-            <Text color="dimmed" size="sm">&copy; {extractRightsHolder(selected.rights_holder)} ({selected.license})</Text>
+            <Text c="dimmed" size="sm">&copy; {extractRightsHolder(selected.rights_holder)} ({selected.license})</Text>
             <Divider size="xs" orientation="vertical" />
-            <Text color="dimmed" size="sm">
+            <Text c="dimmed" size="sm">
               <Link href={selected.reference_url || selected.src} target="_blank">{selected.publisher}</Link>
             </Text>
           </Group>
@@ -571,8 +568,8 @@ function ImageUpload({ scientificName, onUploaded }: ImageUploadProps) {
             {...form.getInputProps('source')}
           />
 
-          <Group position="right" mt="md">
-            <Button type="submit" leftIcon={<IconDeviceFloppy />} loading={isLoading || isSuccess}>Save</Button>
+          <Group justify="right" mt="md">
+            <Button type="submit" leftSection={<IconDeviceFloppy />} loading={isLoading || isSuccess}>Save</Button>
           </Group>
         </Box>
         }

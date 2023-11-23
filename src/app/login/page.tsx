@@ -27,14 +27,14 @@ export default function Login() {
 
   return (
     <Container maw={600}>
-      <Title align="center" py={30}>Login</Title>
+      <Title py={30}>Login</Title>
       <Paper p={80} radius="xl">
         <form onSubmit={form.onSubmit(login)}>
           <TextInput pb={20} label="Email" placeholder="your@email.com" {...form.getInputProps('email')} />
           <PasswordInput pb={20} label="Password" placeholder="******" {...form.getInputProps('password')} />
 
-          <Group position="right" mt="md">
-            <Button type="submit" leftIcon={<IconLogin />} loading={isLoading || isSuccess}>Login</Button>
+          <Group justify="right" mt="md">
+            <Button type="submit" leftSection={<IconLogin />} loading={isLoading || isSuccess}>Login</Button>
           </Group>
 
         {isError &&

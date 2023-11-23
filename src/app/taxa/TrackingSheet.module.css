@@ -1,0 +1,62 @@
+.sheetSelect input {
+  background: none;
+  border: none;
+}
+
+.dataSheet {
+  @mixin dark {
+    --dsg-selection-border-color: var(--mantine-color-dark-3);
+    --dsg-cell-background-color: var(--mantine-color-dark-6);
+    --dsg-border-color: var(--mantine-color-dark-4);
+    --dsg-header-active-text-color: white;
+  }
+}
+
+.dataSheet :global .dsg-add-row {
+  @mixin dark {
+    background: var(--mantine-color-dark-7);
+    color: white;
+  }
+}
+
+.dataSheet :global .dsg-add-row-input {
+  @mixin dark {
+    background: var(--mantine-color-dark-4);
+    border-color: var(--mantine-color-dark-4);
+    border-radius: var(--mantine-radius-md);
+    padding: var(--mantine-spacing-xs);
+  }
+}
+
+.dataSheet :global .dsg-add-row-btn {
+  @mixin dark {
+    background: var(--mantine-color-dark-4);
+    border-color: var(--mantine-color-dark-4);
+    border-radius: var(--mantine-radius-md);
+    padding: var(--mantine-spacing-xs);
+  }
+}
+
+.rowDeleted :global .dsg-cell {
+  background: #fff1f0;
+
+  @mixin dark {
+    background: #490701;
+  }
+}
+
+.rowCreated :global .dsg-cell {
+  background: #f6ffed;
+
+  @mixin dark {
+    background: #023109;
+  }
+}
+
+.rowUpdated :global .dsg-cell {
+  background: #fff7e6;
+
+  @mixin dark {
+    background: #593500;
+  }
+}

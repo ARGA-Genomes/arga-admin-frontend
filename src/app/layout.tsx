@@ -1,111 +1,70 @@
 'use client';
 
+import '@mantine/core/styles.css';
+import 'react-datasheet-grid/dist/style.css'
+import classes from './layout.module.css';
+
 import { store } from '@/store';
 import {
   AppShell,
-  Group,
   MantineProvider,
-  Navbar,
   ThemeIcon,
-  UnstyledButton,
-  Text,
-  Switch,
   useMantineColorScheme,
   useMantineTheme,
-  ColorSchemeProvider,
-  ColorScheme
+  NavLink,
+  useComputedColorScheme,
+  ActionIcon,
+  Center,
 } from '@mantine/core';
-import { useColorScheme } from '@mantine/hooks';
-import { IconBinaryTree2, IconList, IconMoonStars, IconPhoto, IconSun, IconTags } from '@tabler/icons-react';
+import cx from 'clsx';
+import { IconBinaryTree2, IconMoon, IconPhoto, IconSun } from '@tabler/icons-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
 import { Provider } from 'react-redux';
 
 
-interface NavLinkProps {
-  icon: React.ReactNode;
-  color: string;
-  label: string;
-}
-
-function NavLink({ icon, color, label }: NavLinkProps) {
-  return (
-    <UnstyledButton
-      sx={(theme) => ({
-        display: 'block',
-        width: '100%',
-        padding: theme.spacing.xs,
-        borderRadius: theme.radius.sm,
-        color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.black,
-
-        '&:hover': {
-          backgroundColor:
-            theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
-        },
-      })}
-    >
-      <Group>
-        <ThemeIcon color={color} variant="light">
-          {icon}
-        </ThemeIcon>
-
-        <Text size="sm">{label}</Text>
-      </Group>
-    </UnstyledButton>
-  );
-}
-
-
-function SideNav() {
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const theme = useMantineTheme();
-
-  return (
-    <Navbar p="xs" width={{ base: 300 }}>
-      <Navbar.Section grow mt="md">
-        <Link href="/taxa">
-          <NavLink color="blue" label="Taxa" icon={<IconBinaryTree2/>} />
-        </Link>
-        <Link href="/user_taxa">
-          <NavLink color="violet" label="User Taxa" icon={<IconList/>} />
-        </Link>
-        <Link href="/lists">
-          <NavLink color="violet" label="Lists" icon={<IconList/>} />
-        </Link>
-        <Link href="/attributes">
-          <NavLink color="green" label="Attributes" icon={<IconTags/>} />
-        </Link>
-        <Link href="/media">
-          <NavLink color="orange" label="Media" icon={<IconPhoto/>} />
-        </Link>
-      </Navbar.Section>
-
-      <Navbar.Section>
-        <Group position="center" my={30}>
-          <Switch
-            checked={colorScheme === 'dark'}
-            onChange={() => toggleColorScheme()}
-            size="lg"
-            onLabel={<IconSun color={theme.white} size="1.25rem" stroke={1.5} />}
-            offLabel={<IconMoonStars color={theme.colors.gray[6]} size="1.25rem" stroke={1.5} />}
-          />
-        </Group>
-      </Navbar.Section>
-    </Navbar>
-  );
-}
-
 function Shell({ children }: { children: React.ReactNode }) {
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
+
   return (
-    <AppShell
-      padding="md"
-      navbar={<SideNav/>}
-      styles={(theme) => ({
-        main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
-      })}
-    >
-      {children}
+    <AppShell padding="md" navbar={{ width: 300, breakpoint: 'sm' }}>
+      <AppShell.Navbar p="xs">
+        <AppShell.Section grow mt="md">
+          <NavLink
+            label="Taxa"
+            description="View and edit taxa"
+            leftSection={<ThemeIcon color="blue" variant="light"><IconBinaryTree2 /></ThemeIcon>}
+            component={Link}
+            href="/taxa"
+          />
+          <NavLink
+            label="Media"
+            description="Assign photos to species"
+            leftSection={<ThemeIcon color="orange" variant="light"><IconPhoto /></ThemeIcon>}
+            component={Link}
+            href="/media"
+          />
+        </AppShell.Section>
+
+        <AppShell.Section>
+          <Center>
+            <ActionIcon
+              onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
+              variant="default"
+              size="xl"
+              aria-label="Toggle color scheme"
+            >
+              <IconSun className={cx(classes.icon, classes.light)} stroke={1.5} />
+              <IconMoon className={cx(classes.icon, classes.dark)} stroke={1.5} />
+            </ActionIcon>
+          </Center>
+        </AppShell.Section>
+      </AppShell.Navbar>
+
+      <AppShell.Main>
+        {children}
+      </AppShell.Main>
     </AppShell>
   );
 }
@@ -114,26 +73,19 @@ function Shell({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient()
 
-  const preferredColorScheme = useColorScheme('dark');
-  const [colorScheme, setColorScheme] = useState<ColorScheme>(preferredColorScheme);
-  const toggleColorScheme = (value?: ColorScheme) =>
-    setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
-
   return (
     <html lang="en">
       <head/>
       <body>
-        <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
-          <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
-            <Provider store={store}>
+        <MantineProvider defaultColorScheme="light">
+          <Provider store={store}>
             <QueryClientProvider client={queryClient}>
               <Shell>
                 {children}
               </Shell>
             </QueryClientProvider>
             </Provider>
-          </MantineProvider>
-        </ColorSchemeProvider>
+        </MantineProvider>
       </body>
     </html>
   )
